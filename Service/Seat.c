@@ -1,7 +1,7 @@
 /*
  *  Seat.c
  *
- *  Created on: 2015Äê6ÔÂ12ÈÕ
+ *  Created on: 2015å¹´6æœˆ12æ—¥
  *  Author: lc
  */
 #include <stdlib.h>
@@ -11,73 +11,73 @@
 //#include "EntityKey.h"
 
 inline int Seat_Srv_Add(const seat_t *data){
-	// Çë²¹³äÍêÕû
+	// è¯·è¡¥å……å®Œæ•´
        return 0;
 }
 
 inline int Seat_Srv_AddBatch(seat_list_t list){
-	// Çë²¹³äÍêÕû
+	// è¯·è¡¥å……å®Œæ•´
        return 0;
 }
 
 inline int Seat_Srv_Modify(const seat_t *data){
-	// Çë²¹³äÍêÕû
+	// è¯·è¡¥å……å®Œæ•´
        return 0;
 }
 
 inline int Seat_Srv_DeleteByID(int ID){
-	// Çë²¹³äÍêÕû
+	// è¯·è¡¥å……å®Œæ•´
        return 1;
 }
 
 inline int Seat_Srv_FetchByID(int ID, seat_t *buf){
-	// Çë²¹³äÍêÕû
+	// è¯·è¡¥å……å®Œæ•´
        return 0;
 }
 
 inline int Seat_Srv_DeleteAllByRoomID(int roomID){
-	// Çë²¹³äÍêÕû
+	// è¯·è¡¥å……å®Œæ•´
        return 0;
 }
 
-//¸ù¾İÑİ³öÌüIDÔØÈë×ùÎ»
+//æ ¹æ®æ¼”å‡ºå…IDè½½å…¥åº§ä½
 int Seat_Srv_FetchByRoomID(seat_list_t list, int roomID){
-       // Çë²¹³äÍêÕû
+       // è¯·è¡¥å……å®Œæ•´
        return 0;
 }
 
-/*¸ù¾İ·ÅÓ³ÌüIDÌáÈ¡ÓĞĞ§µÄ×ùÎ»*/
+/*æ ¹æ®æ”¾æ˜ å…IDæå–æœ‰æ•ˆçš„åº§ä½*/
 int Seat_Srv_FetchValidByRoomID(seat_list_t list, int roomID)
 {
-       // Çë²¹³äÍêÕû
+       // è¯·è¡¥å……å®Œæ•´
        return 0;
 }
 
 
-//¸ù¾İĞĞ¡¢ÁĞÊı³õÊ¼»¯Ñİ³öÌüµÄ×ùÎ»
+//æ ¹æ®è¡Œã€åˆ—æ•°åˆå§‹åŒ–æ¼”å‡ºå…çš„åº§ä½
 int Seat_Srv_RoomInit(seat_list_t list, int roomID, int rowsCount,
 		int colsCount) {
-	// Çë²¹³äÍêÕû
+	// è¯·è¡¥å……å®Œæ•´
        return 0;
 }
 
-//¶Ô×ùÎ»Á´±ílist½øĞĞ°´×ùÎ»ĞĞºÅºÍÁĞºÅÅÅĞò
+//å¯¹åº§ä½é“¾è¡¨listè¿›è¡ŒæŒ‰åº§ä½è¡Œå·å’Œåˆ—å·æ’åº
 void Seat_Srv_SortSeatList(seat_list_t list) {
-       // Çë²¹³äÍêÕû
+       // è¯·è¡¥å……å®Œæ•´
 }
 
-//½«½áµãnode¼ÓÈëµ½ÒÑÅÅĞòÁ´±ílistÖĞ
+//å°†ç»“ç‚¹nodeåŠ å…¥åˆ°å·²æ’åºé“¾è¡¨listä¸­
 void Seat_Srv_AddToSoftedList(seat_list_t list, seat_node_t *node) {
-       // Çë²¹³äÍêÕû
+       // è¯·è¡¥å……å®Œæ•´
 }
 
 inline seat_node_t * Seat_Srv_FindByRowCol(seat_list_t list, int row, int column) {
-       // Çë²¹³äÍêÕû
+       // è¯·è¡¥å……å®Œæ•´
        return NULL;
 }
 
 
 inline seat_node_t * Seat_Srv_FindByID(seat_list_t list, int rowID) {
-       // Çë²¹³äÍêÕû
+       // è¯·è¡¥å……å®Œæ•´
        return NULL;
 }
