@@ -6,9 +6,9 @@
  */
 
 #include "Studio_Persist.h"
-#include "../Service/studio.h"
-#include "EntityKey_Persist.h"		////新方案添加内容
-#include "../common/list.h"
+#include "../Service/Studio.h"
+#include "EntityKey_Persist.h"		
+#include "../Common/List.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include<unistd.h>
@@ -18,24 +18,16 @@
 static const char STUDIO_DATA_FILE[] = "Studio.dat";
 static const char STUDIO_DATA_TEMP_FILE[] = "StudioTmp.dat";
 
-////添加对象主键标识名称
-////添加对象主键标识名称
+//添加对象主键标识名称
 static const char STUDIO_KEY_NAME[] = "Studio";
-////添加对象主键标识名称
-////添加对象主键标识名称
 
-int Studio_Perst_Insert(studio_t *data) {	////新方案将data前面的const去掉了
+int Studio_Perst_Insert(studio_t *data) {	
 	assert(NULL!=data);
 
-	////以下是新设计方案方案添加的代码
-	////以下是新设计方案方案添加的代码
 	long key = EntKey_Perst_GetNewKeys(STUDIO_KEY_NAME, 1); //为新演出厅分配获取
 	if(key<=0)			//主键分配失败，直接返回
 		return 0;
 	data->id = key;		//赋给新对象带回到UI层
-	////以上是新设计方案方案添加的代码
-	////以上是新设计方案方案添加的代码
-
 
 
 	FILE *fp = fopen(STUDIO_DATA_FILE, "ab");

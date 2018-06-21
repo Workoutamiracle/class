@@ -16,7 +16,7 @@
 //#include "./View/Account_UI.h"
 
 
-//¶¨ÒåÈ«¾Ö±äÁ¿£¬ÓÃÓÚ´æ´¢µÇÂ½ÓÃ»§ĞÅÏ¢
+//å®šä¹‰å…¨å±€å˜é‡ï¼Œç”¨äºå­˜å‚¨ç™»é™†ç”¨æˆ·ä¿¡æ¯
 //account_t gl_CurUser={0, USR_ANOMY, "Anonymous",""};
 
 int main(void) {

@@ -1,7 +1,7 @@
 /*
  * Studio_UI.c
  *
- *  Created on: 2015Äê4ÔÂ24ÈÕ
+ *  Created on: 2015å¹´4æœˆ24æ—¥
  *      Author: Administrator
  */
 #include "../View/Studio_UI.h"
@@ -23,11 +23,11 @@ void Studio_UI_MgtEntry(void) {
 	studio_node_t *pos;
 	Pagination_t paging;
 
-	List_Init(head, studio_node_t);
+	List_Init(head, studio_node_t)
 	paging.offset = 0;
 	paging.pageSize = STUDIO_PAGE_SIZE;
 
-	//ÔØÈëÊı¾İ
+	//è½½å…¥æ•°æ®
 	paging.totalRecords = Studio_Srv_FetchAll(head);
 	Paging_Locate_FirstPage(head, paging);
 
@@ -40,7 +40,7 @@ void Studio_UI_MgtEntry(void) {
 				"Columns Count", "Seats Count");
 		printf(
 				"------------------------------------------------------------------\n");
-		//ÏÔÊ¾Êı¾İ
+		//æ˜¾ç¤ºæ•°æ®
 		Paging_ViewPage_ForEach(head, paging, studio_node_t, pos, i){
 			printf("%5d  %18s  %10d  %10d  %10d\n", pos->data.id,
 					pos->data.name, pos->data.rowsCount, pos->data.colsCount,
@@ -65,7 +65,7 @@ void Studio_UI_MgtEntry(void) {
 		switch (choice) {
 		case 'a':
 		case 'A':
-			if (Studio_UI_Add()) //ĞÂÌí¼Ó³É¹¦£¬Ìøµ½×îºóÒ»Ò³ÏÔÊ¾
+			if (Studio_UI_Add()) //æ–°æ·»åŠ æˆåŠŸï¼Œè·³åˆ°æœ€åä¸€é¡µæ˜¾ç¤º
 			{
 				paging.totalRecords = Studio_Srv_FetchAll(head);
 				Paging_Locate_LastPage(head, paging, studio_node_t);
@@ -75,18 +75,18 @@ void Studio_UI_MgtEntry(void) {
 		case 'D':
 			printf("Input the ID:");
 			scanf("%d", &id);
-			if (Studio_UI_Delete(id)) {	//´ÓĞÂÔØÈëÊı¾İ
+			if (Studio_UI_Delete(id)) {	//ä»æ–°è½½å…¥æ•°æ®
 				paging.totalRecords = Studio_Srv_FetchAll(head);
-				List_Paging(head, paging, studio_node_t);
+				List_Paging(head, paging, studio_node_t)
 			}
 			break;
 		case 'u':
 		case 'U':
 			printf("Input the ID:");
 			scanf("%d", &id);
-			if (Studio_UI_Modify(id)) {	//´ÓĞÂÔØÈëÊı¾İ
+			if (Studio_UI_Modify(id)) {	//ä»æ–°è½½å…¥æ•°æ®
 				paging.totalRecords = Studio_Srv_FetchAll(head);
-				List_Paging(head, paging, studio_node_t);
+				List_Paging(head, paging, studio_node_t)
 			}
 			break;
 		case 's':
@@ -96,7 +96,6 @@ void Studio_UI_MgtEntry(void) {
 			//Seat_UI_MgtEntry(id);
 			paging.totalRecords = Studio_Srv_FetchAll(head);
 			List_Paging(head, paging, studio_node_t)
-			;
 			break;
 		case 'p':
 		case 'P':
@@ -112,8 +111,8 @@ void Studio_UI_MgtEntry(void) {
 			break;
 		}
 	} while (choice != 'r' && choice != 'R');
-	//ÊÍ·ÅÁ´±í¿Õ¼ä
-	List_Destroy(head, studio_node_t);
+	//é‡Šæ”¾é“¾è¡¨ç©ºé—´
+	List_Destroy(head, studio_node_t)
 }
 
 int Studio_UI_Add(void) {
@@ -170,10 +169,10 @@ int Studio_UI_Modify(int id) {
 	fflush(stdin);
 	gets(rec.name);
 
-	List_Init(list, seat_node_t);
+	List_Init(list, seat_node_t)
 	seatcount = Seat_Srv_FetchByRoomID(list, rec.id);
 	if (seatcount) {
-		do {			//Èç¹û×ùÎ»ÎÄ¼şÖĞÒÑÓĞ×ùÎ»ĞÅÏ¢£¬Ôò¸üĞÂµÄĞĞÁĞ±ØĞë±ÈÒÔÇ°´ó£¬·ñÔò²»ÔÊĞí¸ü¸Ä
+		do {			//å¦‚æœåº§ä½æ–‡ä»¶ä¸­å·²æœ‰åº§ä½ä¿¡æ¯ï¼Œåˆ™æ›´æ–°çš„è¡Œåˆ—å¿…é¡»æ¯”ä»¥å‰å¤§ï¼Œå¦åˆ™ä¸å…è®¸æ›´æ”¹
 			printf("Row Count of Seats should >= [%d]:", rec.rowsCount);
 			scanf("%d", &(newrow));
 			printf("Column Count of Seats should >= [%d]:", rec.colsCount);
@@ -208,7 +207,7 @@ int Studio_UI_Delete(int id) {
 	int rtn = 0;
 
 	if (Studio_Srv_DeleteByID(id)) {
-		//ÔÚÉ¾³ı·ÅÓ³ÌüÊ±£¬Í¬Ê±¸ù¾İ·ÅÓ³ÌüidÉ¾³ı×ùÎ»ÎÄ¼şÖĞµÄ×ùÎ»
+		//åœ¨åˆ é™¤æ”¾æ˜ å…æ—¶ï¼ŒåŒæ—¶æ ¹æ®æ”¾æ˜ å…idåˆ é™¤åº§ä½æ–‡ä»¶ä¸­çš„åº§ä½
 		if (Seat_Srv_DeleteAllByRoomID(id))
 			printf("The seats of the room deleted successfully!\n");
 		printf(
