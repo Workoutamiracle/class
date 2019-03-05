@@ -154,6 +154,10 @@ public:
     void Merge(int num) {
         fstream file;
         file.open(downfile,ios::out);
+        if(!file.is_open()) {
+            cout << "合并文件打开失败" << endl;
+            return;
+        }
         for(int i = 0;i < num+1;++i) {
             fstream f;
             f.open(downfile+"_"+to_string(i),ios::in);
@@ -161,8 +165,8 @@ public:
                 break;
             char temp;
             int j = 0;
+
             while(f.read(&temp,1)) {
-                usleep(10);
                 file << temp;
                 j++;
                 if(j == (size/num))
@@ -240,6 +244,9 @@ void *Write_Thread(void *num)
     fstream file;
     
     file.open((inf.begin() + *(int *)num)->downfile+"_"+to_string(*(int *)num),ios::out);
+    if(!file.is_open()) {
+        cout << "下载文件打开失败" << endl;
+    }
    // file.open((inf.begin() + *(int *)num)->downfile,ios::out);
    // file.seekg(start,ios::beg);
 
@@ -271,7 +278,7 @@ void *Schedule(void *name)
         cout << setprecision(3) << num*100 << "%";
         //printf("%.2f%%",num);
         fflush(stdout);
-        sleep(1);
+        usleep(100);
         if(num*100 < 10)
             cout << "\b\b\b\b";
         else
@@ -306,7 +313,6 @@ int main()
 
     http.downfile = http.filename;    
     
-    pthread_t tid;
     file_size = 0;
     
     //检测文件是否存在
