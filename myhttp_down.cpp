@@ -278,7 +278,6 @@ void *Schedule(void *name)
         cout << setprecision(3) << num*100 << "%";
         //printf("%.2f%%",num);
         fflush(stdout);
-        usleep(100);
         if(num*100 < 10)
             cout << "\b\b\b\b";
         else

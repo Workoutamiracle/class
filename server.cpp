@@ -27,6 +27,7 @@ int main(int argc,char *argv[])
         int num = 1;
         int length = sizeof(num);
 	    setsockopt(fd,SOL_SOCKET,SO_REUSEADDR,&num,length);
+        
         if(bind(fd,(struct sockaddr *)&serv,sizeof(serv)) < 0) {
             cout << "绑定失败 " << endl;
             exit(0);
@@ -73,12 +74,13 @@ int main(int argc,char *argv[])
         int fd = argv[1][0] - '0';
         char ch = 'a';
         send(fd,&ch,1,0);
-        
-        sleep(1);
-        char info[] = "welldown";
-        send(fd,info,9,0);
-        
-    }
+       
+        for(int i = 0;i < 10;++i) {
+            sleep(1);
+            ch = 'c';
+            send(fd,&ch,1,0);
+        }
+}
 
     return 0;
 }
