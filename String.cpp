@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string.h>
+#include <string>
 
 using namespace std;
 class String{
@@ -7,6 +8,7 @@ class String{
         size_t length;
         char *data;
     public:
+        class iterator;
         //构造函数
         String();
         String(size_t length,char ch);
@@ -14,12 +16,131 @@ class String{
         String(const char *str,size_t length);
         String(String &str);
         String(String &str,size_t index,size_t length);
-
+        String(iterator &begin,iterator &end);
         //
         char *c_str() const;
         size_t size() const;
 
-    };
+        //析构函数
+        ~String();
+
+        iterator begin() {
+            return iterator(this,0);
+        }
+        //迭代器
+        class iterator{
+            public:
+                //迭代器构造函数
+                iterator() {
+                    it = NULL;
+                }
+                iterator(const iterator &its) {
+                        it = its.it;
+                        index = its.index;
+                }
+                iterator(const String *str) {
+                    it = str;
+                    index = 0;
+                }
+                iterator(const String *str,size_t num) {
+                    if(num < 0) {
+                        it = NULL;
+                        index = 0;
+                    }
+                    else {
+                        it = str;
+                        index = num;
+                    }
+                }
+                
+                char operator*() {
+                    return *(it->data+index);
+                }
+
+                //迭代器加法
+                iterator operator+(int num) {
+                    if(!it)
+                        return iterator();
+                    return iterator(it,index+num);
+                }
+                //迭代器减法
+                iterator operator-(int num) {
+                    if(!it)
+                        return iterator();
+                    return iterator(it,index-num);
+                }
+                //迭代器与迭代器减法
+                int operator-(iterator &end) {
+                    return this->it->size() - end.it->size();
+                }
+
+                iterator &operator=(iterator &its) {
+                    it = its.it;
+                    index = its.index;
+                    return *this;
+                } 
+                bool operator==(iterator &its) {
+                    return **this == *its; 
+                }
+                bool operator!=(iterator &its) {
+                    return !(*this == its);
+                }
+                //前置递增
+                iterator &operator++() {
+                    if(index+1 >= it->size()) {
+                        cout << "无效的迭代器" << endl;
+                        exit(0);
+                    }
+                    else {
+                        index += 1;
+                    }
+                    return *this;
+                }
+                //前置递减
+                iterator &operator--() {
+                    if(index-1 < 0) {
+                        cout << "无效的迭代器" << endl;
+                        exit(0);
+                    }
+                    else {
+                        index -= 1;
+                    }
+                    return *this;
+                }
+                //后置递增
+                iterator operator++(int num) {
+                    //保存当前迭代器状态
+                    iterator its = *this;
+                    (*this)++;
+                    return its;
+                }
+                //后置递减
+                iterator operator--(int num) {
+                    //保存当前迭代器状态
+                    iterator its = *this;
+                    (*this)--;
+                    return its;
+                }
+ 
+
+                
+                //迭代器析构函数
+                ~iterator() {
+                    it = NULL;
+                }
+            private:
+                const String *it;
+                size_t index;
+        };
+
+
+        
+
+};
+String::~String()
+{
+    delete(data);
+}
 String::String() 
 {
     data = NULL;
@@ -113,6 +234,11 @@ String::String(String &str,size_t index,size_t length)
     }
 }
 
+String::String(iterator &begin,iterator &end)
+{
+    if()
+    
+}
 
 char * String::c_str() const
 {
@@ -137,18 +263,6 @@ ostream& operator<<(ostream &os,const String &str)
 
 int main()
 {
-    String s1;
-    String s2(5,'w');
-    String s3("wwwww");
-    String s4("wwwwww",5);
-    String s5(s2);
-    String s6(s4,0,5);
-
-    cout << s1;
-    cout << s3 << endl;
-    cout << s4 << endl;
-    cout << s5 << endl;
-    cout << s6 << endl;
 
     return 0;
 }
