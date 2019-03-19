@@ -79,8 +79,9 @@ class String{
                     index = its.index;
                     return *this;
                 } 
+                //迭代器相等操作
                 bool operator==(iterator &its) {
-                    return **this == *its; 
+                    return this->it == its.it && this->index == its.index;
                 }
                 bool operator!=(iterator &its) {
                     return !(*this == its);
@@ -236,8 +237,7 @@ String::String(String &str,size_t index,size_t length)
 
 String::String(iterator &begin,iterator &end)
 {
-    if()
-    
+        
 }
 
 char * String::c_str() const
