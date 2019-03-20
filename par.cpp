@@ -4,16 +4,16 @@
 using namespace std;
 int main()
 {
-    string s1("wangheng");
-    auto p = s1.begin()+2;
-    auto q = s1.begin()+6;
-
-    if(p == q)
-        cout << "相等" << endl;
+    string s1("wangheng1");
+    string s2 = "wangheng"; 
+    
+    cout << s1+"wangheng" << endl;
+    cout << s1+s2<< endl;
+    if(s1 < s2)
+        cout << s1 << " 小于 " << s2 << endl;
+    else if(s1 == s2)
+        cout << s1 << " 等于 " << s2 << endl;
     else
-        cout << "不相等" << endl;
-
-
-
+        cout << s1 << " 大于 " << s2 << endl;
 }
 

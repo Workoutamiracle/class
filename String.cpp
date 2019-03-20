@@ -16,18 +16,83 @@ class String{
         String(const char *str,size_t length);
         String(String &str);
         String(String &str,size_t index,size_t length);
-        String(iterator &begin,iterator &end);
-        //
+        String(iterator begin,iterator end);
+
+        //普通函数
         char *c_str() const;
         size_t size() const;
 
+        //运算符重载函数
+        
+        //比较函数
+        bool operator==(String &s2) {
+            if(this->length != s2.size())
+                return false;
+            for(size_t i = 0;i < this->length;++i) {
+                if(data[i] != s2.c_str()[i])
+                    return false;
+            }
+            return true;
+        }
+        bool operator!=(String &s2) {
+            return !(*this == s2);
+        }
+        bool operator<(String &s2) {
+            size_t n = 0;
+            while(n < this->length && n < s2.size()) {
+                if(this->c_str()[n] != s2.c_str()[n])
+                    return this->c_str()[n] < s2.c_str()[n];
+                n++;
+            }
+            if(n == this->length && n == s2.size())
+                return false;
+            else if(n == s2.size())
+                return false;
+            else
+                return true;
+        }
+        bool operator<=(String &s2) {
+            size_t n = 0;
+            while(n < this->length && n < s2.size()) {
+                if(this->c_str()[n] != s2.c_str()[n])
+                    return this->c_str()[n] < s2.c_str()[n];
+                n++;
+            }
+            if(n == this->length && n == s2.size())
+                return true;
+            else if(n == s2.size())
+                return false;
+            else
+                return true;
+        }
+        bool operator>(String &s2) {
+            return !(*this < s2); 
+        }
+        bool operator>=(String &s2) {
+            return !(*this <= s2);
+        }
+        
+
+        //合并函数
+
+        String operator+(String &s2);
+        String operator+(const char *str);
+
+        //赋值操作
+        String operator=(const char *str);
+            
         //析构函数
         ~String();
 
-        iterator begin() {
+        //迭代器操作
+        iterator begin() const{
             return iterator(this,0);
         }
-        //迭代器
+        iterator end() const{
+            return iterator(this,length);
+        }
+
+        //迭代器类
         class iterator{
             public:
                 //迭代器构造函数
@@ -71,7 +136,12 @@ class String{
                 }
                 //迭代器与迭代器减法
                 int operator-(iterator &end) {
-                    return this->it->size() - end.it->size();
+                    //判断是否指向同一对象
+                    if(this->it != end.it)
+                        return -1; 
+                    else {
+                        return this->index - end.index;
+                    }
                 }
 
                 iterator &operator=(iterator &its) {
@@ -88,8 +158,8 @@ class String{
                 }
                 //前置递增
                 iterator &operator++() {
-                    if(index+1 >= it->size()) {
-                        cout << "无效的迭代器" << endl;
+                    if(index+1 > it->size()) {
+                        cout << "无法递增,无效的迭代器" << endl;
                         exit(0);
                     }
                     else {
@@ -100,7 +170,7 @@ class String{
                 //前置递减
                 iterator &operator--() {
                     if(index-1 < 0) {
-                        cout << "无效的迭代器" << endl;
+                        cout << "无法递减,无效的迭代器" << endl;
                         exit(0);
                     }
                     else {
@@ -112,18 +182,58 @@ class String{
                 iterator operator++(int num) {
                     //保存当前迭代器状态
                     iterator its = *this;
-                    (*this)++;
+                    ++(*this);
                     return its;
                 }
                 //后置递减
                 iterator operator--(int num) {
                     //保存当前迭代器状态
                     iterator its = *this;
-                    (*this)--;
+                    --(*this);
                     return its;
                 }
- 
+                
+                //小于大于
+                bool operator<(iterator &its) {
+                    //判断是否指向同一String对象
+                    if(this->it != its.it) {
+                        cout << "指向不同对象的迭代器不能互相比较" << endl;
+                        exit(0);
+                    }
+                    return this->index < its.index;
+                }
+                bool operator<=(iterator &its) {
+                    //判断是否指向同一String对象
+                     if(this->it != its.it) {
+                        cout << "指向不同对象的迭代器不能互相比较" << endl;
+                        exit(0);
+                    }
+                    return this->index <= its.index;
+                }
+                bool operator>(iterator &its) {
+                    return !(*this < its);
+                }
+                bool operator>=(iterator &its) {
+                    return !(*this <= its);
+                }
 
+                //累加累减
+                iterator &operator+=(int num) {
+                    if(this->index+num > this->it->size()) {
+                        cout << "无法增长，无效的迭代器" << endl;
+                        exit(0);
+                    }
+                    this->index += num;
+                    return *this;
+                }  
+                iterator &operator-=(int num) {
+                    if(this->index-num < 0) {
+                        cout << "无法减少，无效的迭代器" << endl;
+                        exit(0);
+                    }
+                    this->index -= num;
+                    return *this;
+                }
                 
                 //迭代器析构函数
                 ~iterator() {
@@ -235,11 +345,42 @@ String::String(String &str,size_t index,size_t length)
     }
 }
 
-String::String(iterator &begin,iterator &end)
+String::String(iterator begin,iterator end)
 {
-        
+    //判断是否指向同一对象并且迭代器范围是否有误
+    if(end - begin < 0) {
+        cout << "length=" << end - begin << endl;
+        cout << "无效的迭代器" << endl;
+        exit(0);
+    } 
+    else {
+        data = new char[end - begin+1];
+        size_t i = 0;
+        while(begin != end) {
+            data[i++] = *begin++;
+        }
+        data[i] = '\0';
+    }
 }
 
+String String::operator+(String &s2) 
+{
+            long l = this->length + s2.size();
+            char ar[l];
+
+            strcpy(ar,this->c_str());
+            strcpy(ar,s2.c_str());
+            
+            String temp2(ar);
+            return temp2;
+}
+String String::operator+(const char *str) 
+{
+            String s2(str);
+            String temp(data);
+            
+}
+    
 char * String::c_str() const
 {
     return this->data;
@@ -263,7 +404,16 @@ ostream& operator<<(ostream &os,const String &str)
 
 int main()
 {
-
+    String s1("wanghen");
+    String s2("wangheng");
+        
+    cout << s1+s2 << endl;
+    if(s1 < s2)
+        cout << "yes" << endl;
+    else if(s1 == s2)
+        cout << "equals" << endl;
+    else
+        cout << "no" << endl;
     return 0;
 }
 
