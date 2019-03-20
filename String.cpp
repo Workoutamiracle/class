@@ -1,6 +1,5 @@
 #include <iostream>
 #include <string.h>
-#include <string>
 
 using namespace std;
 class String{
@@ -25,61 +24,27 @@ class String{
         //运算符重载函数
         
         //比较函数
-        bool operator==(String &s2) {
-            if(this->length != s2.size())
-                return false;
-            for(size_t i = 0;i < this->length;++i) {
-                if(data[i] != s2.c_str()[i])
-                    return false;
-            }
-            return true;
-        }
-        bool operator!=(String &s2) {
-            return !(*this == s2);
-        }
-        bool operator<(String &s2) {
-            size_t n = 0;
-            while(n < this->length && n < s2.size()) {
-                if(this->c_str()[n] != s2.c_str()[n])
-                    return this->c_str()[n] < s2.c_str()[n];
-                n++;
-            }
-            if(n == this->length && n == s2.size())
-                return false;
-            else if(n == s2.size())
-                return false;
-            else
-                return true;
-        }
-        bool operator<=(String &s2) {
-            size_t n = 0;
-            while(n < this->length && n < s2.size()) {
-                if(this->c_str()[n] != s2.c_str()[n])
-                    return this->c_str()[n] < s2.c_str()[n];
-                n++;
-            }
-            if(n == this->length && n == s2.size())
-                return true;
-            else if(n == s2.size())
-                return false;
-            else
-                return true;
-        }
-        bool operator>(String &s2) {
-            return !(*this < s2); 
-        }
-        bool operator>=(String &s2) {
-            return !(*this <= s2);
-        }
-        
+        bool operator==(String &s2);        
+        bool operator!=(String &s2);
+
+        bool operator<(String &s2);
+        bool operator<=(String &s2);
+        bool operator>(String &s2);
+        bool operator>=(String &s2);
+               
 
         //合并函数
 
-        String operator+(String &s2);
+        String operator+(const String &s2);
         String operator+(const char *str);
 
         //赋值操作
-        String operator=(const char *str);
+        String &operator=(String &s2);
+        String &operator=(const char *str);
+
+        String operator+=(String &s2);
+        String operator+=(const char *str);
+        
             
         //析构函数
         ~String();
@@ -272,6 +237,7 @@ String::String(size_t length,char ch)
 }
 String::String(const char *str)
 {
+    cout << "3" << endl;
     if(!str) {
         data = NULL;
         length = 0;
@@ -310,6 +276,7 @@ String::String(const char *str,size_t length)
 }
 String::String(String &str)
 {
+    cout << "1" << endl;
     if(str.size() == 0) {
         data = NULL;
         this->length = 0;
@@ -363,24 +330,114 @@ String::String(iterator begin,iterator end)
     }
 }
 
-String String::operator+(String &s2) 
+bool String::operator==(String &s2)
 {
-            long l = this->length + s2.size();
-            char ar[l];
+    if(this->length != s2.size())
+    return false;
+    for(size_t i = 0;i < this->length;++i) {
+        if(data[i] != s2.c_str()[i])
+            return false;
+    }
+    return true;
+}  
 
-            strcpy(ar,this->c_str());
-            strcpy(ar,s2.c_str());
-            
-            String temp2(ar);
-            return temp2;
+bool String::operator<(String &s2) 
+{
+    size_t n = 0;
+    while(n < this->length && n < s2.size()) {
+        if(this->c_str()[n] != s2.c_str()[n])
+            return this->c_str()[n] < s2.c_str()[n];
+        n++;
+    }
+    if(n == this->length && n == s2.size())
+        return false;
+    else if(n == s2.size())
+        return false;
+    else
+        return true;
+}
+
+bool String::operator<=(String &s2) 
+{
+    size_t n = 0;
+    while(n < this->length && n < s2.size()) {
+        if(this->c_str()[n] != s2.c_str()[n])
+            return this->c_str()[n] < s2.c_str()[n];
+        n++;
+    }
+    if(n == this->length && n == s2.size())
+        return true;
+    else if(n == s2.size())
+        return false;
+    else
+        return true;
+}
+bool String::operator>(String &s2) 
+{
+    return !(*this < s2); 
+}
+bool String::operator>=(String &s2) 
+{
+    return !(*this <= s2);
+}
+
+bool String::operator!=(String &s2) 
+{
+    return !(*this == s2);
+}
+
+String String::operator+(const String &s2)
+{
+    
+    long l = this->length + s2.size();
+    char ar[l];
+
+    strcpy(ar,this->c_str());
+    strcat(ar,s2.c_str());
+
+    String temp2(ar);
+    return temp2;
+    
 }
 String String::operator+(const char *str) 
 {
-            String s2(str);
-            String temp(data);
-            
+    String s2(str);
+    long l = this->length + s2.size();
+    char ar[l];
+
+    strcpy(ar,this->c_str());
+    strcat(ar,s2.c_str());
+
+    String temp2(ar);
+    return temp2;
+
+} 
+
+String &String::operator=(const char *str) 
+{
+    cout << "4" << endl;
+    //检查字符串是否有效
+    if(!str) {
+        String(); 
+    }
+    //检查当前String类是否有数据
+    if(this->length > 0) {
+        delete(this->data);
+    }
+    this->length = strlen(str);
+    data = new char[strlen(str)+1];
+    strcpy(data,str);;
+    data[this->length] = '\0';
+    return *this;
 }
-    
+
+String &String::operator=(String &s2)
+{
+    cout << "2" << endl;
+    return *this = s2.c_str();
+}
+
+   
 char * String::c_str() const
 {
     return this->data;
@@ -404,16 +461,13 @@ ostream& operator<<(ostream &os,const String &str)
 
 int main()
 {
-    String s1("wanghen");
-    String s2("wangheng");
         
-    cout << s1+s2 << endl;
-    if(s1 < s2)
-        cout << "yes" << endl;
-    else if(s1 == s2)
-        cout << "equals" << endl;
-    else
-        cout << "no" << endl;
+
+    
+    String s4;
+    s4 = "wh";
+    String s5 = "wh";
+
     return 0;
 }
 
