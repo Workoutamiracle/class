@@ -81,7 +81,11 @@ class String{
         void swap(String &s2);                      //减缓当前字符串与s2的值
         String &append(const char *s);              //把字符串s连接到当前字符串结尾
         void push_back(char c);                     //将字符c加入当前字符串尾部
+        void pop_back(char c);                      //将字符C加入当前字符串头部
 
+
+        //清除函数
+        void clear();        //清楚字符串所有内容
 
 
         //析构函数
@@ -246,15 +250,30 @@ class String{
                 const String *it;
                 size_t index;
         };
+        
+        //引用类型
+        class reference {
+            private:
+                 
+            
 
+        };
 
         
 
 };
+
+void String::clear()
+{
+    this->length = 0;
+    delete(this->data);
+}
+
 String::~String()
 {
-    delete(data);
+    clear();
 }
+
 String::String() 
 {
     data = NULL;
@@ -723,6 +742,18 @@ void String::push_back(char c)
     this->data[this->length] = '\0';
 }
 
+void String::pop_back(char c)
+{
+    char buf[this->length];
+    strcpy(buf,this->data);
+    delete(this->data);
+    this->length++;
+    this->data = new char[this->length+1];
+    this->data[0] = c;
+    strcat(this->data,buf);
+    this->data[this->length] = '\0';
+
+}
 String To_string(int n)
 {
     char ar[5]; 
@@ -742,6 +773,7 @@ int main()
     String s1 = "123456";
     String s2 = "789";
     cout << s1 << endl;
+
     return 0;
 }
 
