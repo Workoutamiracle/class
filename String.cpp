@@ -1,5 +1,7 @@
 #include <iostream>
 #include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 using namespace std;
 class String{
@@ -8,6 +10,7 @@ class String{
         char *data;
     public:
         class iterator;
+        size_t npos = -1;
         //构造函数
         String();
         String(size_t length,char ch);
@@ -18,37 +21,69 @@ class String{
 
         String(String const  &str);
 
-        //普通函数
-        char *c_str() const;
-        size_t size() const;
-
         //运算符重载函数
-        
-        //比较函数
+        char operator[](int num);
+        //运算符比较函数
         bool operator==(String &s2);        
         bool operator!=(String &s2);
-
         bool operator<(String &s2);
         bool operator<=(String &s2);
         bool operator>(String &s2);
         bool operator>=(String &s2);
                
-
         //合并函数
-
         String operator+(String &s2);
         String operator+(const char *str);
 
         //赋值操作
         String &operator=(const String &s2);
         String &operator=(const char *str);
-
         String operator+=(String &s2);
         String operator+=(const char *str);
 
         friend istream& operator>>(istream &is,String &str);
         
+        //特性函数
+        char *c_str() const;    //返回指向的字符串
+        size_t size() const;    //返回当前字符串长度
+        bool empty() const;     //返回字符串是否为空
+        void resize(size_t len,char c);    //把字符串当前大小置为len，多去少补，多出的字符c填充不足的部分
+
+        //查找函数
+        size_t find(const String &str,size_t index); //从index开始寻找,返回str在字符串中第一次出现的位置 
+        size_t find( const char *str, size_t index );
+        size_t find(const String &str,size_t index,size_t length);
+        size_t find( const char *str, size_t index,size_t length);
+        size_t find( char ch, size_t index );  // 返回字符ch在字符串中第一次出现的位置
+        
+        size_t rfind(String &str,size_t index,size_t length);//从index开始，返回str的前length个字符串在字符串中最后一次出现的位置
+        size_t rfind(String &str,size_t index);
+        size_t rfind( char ch, size_t index );  // 返回字符ch在字符串中第一次出现的位置
+        size_t rfind(const char *str,size_t index);
+
+        
+        size_t find_first_of(String &str,size_t index);//从index开始,查找str中任意字符第一次出现的位置
+        size_t find_first_of(const char *str,size_t index);
+        
+        size_t find_last_of(String &str,size_t index); //从index开始,查找第一个不在str中的字符出现的位置
+
+        //比较函数
+        int compare(const String &s2);
+        int compare(const String &s2,size_t pos1,size_t n1);
+        int compare(const String &s2,size_t pos1,size_t n1,size_t pos2,size_t n2);
             
+        //修改函数
+        String substr(size_t pos,size_t n) const;   //返回pos开始的n个字符组成的字符串
+        String &insert(size_t p,const String &str);    //在p的位置插入字符串str
+        String &erase(size_t p,size_t n);                  //删除从p开始的n个字符,返回修改后的字符串
+        String &assign(String &s2,size_t p,size_t n);   //将s中的字符串替换为s2中从p开始的n个字符
+        String &replace(size_t p,size_t n,const char *s);  //删除从p开始的n个字符,然后插入串s
+        void swap(String &s2);                      //减缓当前字符串与s2的值
+        String &append(const char *s);              //把字符串s连接到当前字符串结尾
+        void push_back(char c);                     //将字符c加入当前字符串尾部
+
+
+
         //析构函数
         ~String();
 
@@ -240,7 +275,6 @@ String::String(size_t length,char ch)
 }
 String::String(const char *str)
 {
-    cout << "3" << endl;
     if(!str) {
         data = NULL;
         length = 0;
@@ -277,10 +311,9 @@ String::String(const char *str,size_t length)
     }
     
 }
-/*
+
 String::String(String const &str)
 {
-    cout << "1" << endl;
     if(str.size() == 0) {
         data = NULL;
         this->length = 0;
@@ -293,7 +326,7 @@ String::String(String const &str)
         data[str.size()] = '\0';
     }
 }
-*/
+
 String::String(String &str,size_t index,size_t length)
 {
     if(str.size() == 0 || index < 0) {
@@ -311,8 +344,8 @@ String::String(String &str,size_t index,size_t length)
     else {
         this->length = length;
         data = new char[length+1];
-        for(size_t i = index;i < length;++i)
-            data[i] = str.c_str()[i];
+        for(size_t i = index,j = 0;j < length;++i,++j)
+            data[j] = str.c_str()[i];
         data[length] = '\0';
     }
 }
@@ -333,6 +366,10 @@ String::String(iterator begin,iterator end)
         }
         data[i] = '\0';
     }
+}
+char String::operator[](int num)
+{
+    return c_str()[num];
 }
 
 bool String::operator==(String &s2)
@@ -394,7 +431,6 @@ bool String::operator!=(String &s2)
 String String::operator+(String &s2)
 {
     
-    cout << "5" << endl;
     long l = this->length + s2.size();
     char ar[l];
 
@@ -421,7 +457,6 @@ String String::operator+(const char *str)
 
 String &String::operator=(const char *str) 
 {
-    cout << "4" << endl;
     //检查字符串是否有效
     if(!str) {
         String(); 
@@ -439,7 +474,6 @@ String &String::operator=(const char *str)
 
 String &String::operator=(const String &s2)
 {
-    cout << "2" << endl;
     return *this = s2.c_str();
 }
 
@@ -477,16 +511,237 @@ istream& operator>>(istream &is,String &str)
     str.data[str.length] = strlen(buf);
     return is;
 }
+bool String::empty() const
+{
+    return this->length == 0;
+}
 
+void String::resize(size_t len,char c)
+{
+    if(this->length < len) {
+        char buf[len];
+        strcpy(buf,this->data);
+        delete(this->data);
+        data = new char[len+1];
+        strcpy(this->data,buf);
+        for(size_t i = this->length;i < len;++i)
+            data[i] = c;
+        this->length = len;
+        this->data[len] = '\0';
+    }
+    else {
+        char buf[len];
+        for(size_t i = 0;i < len;++i)
+            buf[i] = this->data[i];
+        delete(this->data);
+        this->data = new char[len+1];
+        strcpy(this->data,buf);
+        this->data[len] = '\0';
+    }
+}
+
+size_t String::find( const char *str, size_t index,size_t length)
+{
+    size_t l = length;
+    String cmp(str);
+
+    for(size_t i = index;i < this->length - l;++i) {
+        String temp(*this,i,l);
+        if(temp == cmp)
+            return i;
+    }
+    return npos;
+}
+
+size_t String::find(const String &str,size_t index,size_t length)
+{
+    return find(str.c_str(),index,length);
+}
+
+size_t String::find( const char *str, size_t index)
+{
+    return find(str,index,strlen(str));
+}
+
+size_t String::find(const String &str,size_t index)
+{
+    return find(str.c_str(),index,str.size());
+}
+
+size_t String::find( char ch, size_t index )
+{
+    for(size_t i = index;i < this->length;++i)
+        if(ch == (*this)[i])
+            return i;
+    return npos;
+}
+
+size_t String::find_first_of(String &str,size_t index)
+{
+     
+    for(size_t i = index;i < this->length;++i)
+        if(str.find((*this)[i],0) != npos)
+            return i;
+    return npos;
+}
+
+size_t String::find_first_of(const char *str,size_t index)
+{
+    String s(str);
+    return find_first_of(s,index);
+}
+
+size_t String::rfind(String &str,size_t index,size_t length)
+{
+    size_t temp = npos;
+    size_t num;
+    while(index < this->length) {
+        if((num = find(str,index,length)) != npos)
+            temp = num;
+        index++;
+    }
+    return temp;
+}
+
+size_t String::rfind(String &str,size_t index)
+{
+    return rfind(str,index,str.size());
+}
+
+size_t String::rfind( char ch, size_t index )
+{
+    size_t temp = npos;
+    size_t num;
+    while(index < this->length) {
+        if((num = find(ch,index)) != npos)
+            temp = num;
+        index++;
+    }
+    return temp;
+}
+
+size_t String::rfind(const char *str,size_t index)
+{
+    String temp(str);
+    return rfind(temp,index);
+}
+
+size_t String::find_last_of(String &str,size_t index)
+{
+    for(size_t i = index;i < this->length;++i) 
+        if(str.find((*this)[i],0) == npos)
+            return i;
+    return npos;
+}
+
+int String::compare(const String &s2)
+{
+    return strcmp(this->data,s2.c_str());
+}
+
+int String::compare(const String &s2,size_t pos1,size_t n1,size_t pos2,size_t n2)
+{
+    String t1 = this->substr(pos1,n1);
+    String t2 = s2.substr(pos2,n2);
+    return strcmp(t1.c_str(),t2.c_str());
+}
+
+String String::substr(size_t pos,size_t n) const
+{
+    if(pos + n > this->length) {
+        cout << "无效的长度" << endl;
+        exit(0);
+    } 
+    char buf[n];
+    char *temp = this->data+pos;
+    strncpy(buf,temp,n);
+    return String(buf,n);
+}
+
+String &String::insert(size_t p,const String &str)
+{
+
+    String s1 = str;
+    String s2 = this->substr(p,this->length-p);
+    
+    String s3 = this->substr(0,p);
+
+    *this = s3 + s1 + s2;
+    return *this;
+}
+
+String &String::erase(size_t p,size_t n)
+{
+    if(p + n > this->length) {
+        cout << "无效的范围" << endl;
+        exit(0);
+    } 
+    String s1 = this->substr(0,p);
+    String s2 = this->substr(p,n);
+    String s3 = this->substr(p+n,this->length-p-n);
+
+    *this = s1 + s3;
+    return *this;
+}
+
+String &String::assign(String &s2,size_t p,size_t n)
+{
+    String temp = s2.substr(p,n); 
+    *this = temp;
+    return *this;
+}
+String &String::replace(size_t p,size_t n,const char *s)
+{
+    this->erase(p,n);
+    this->insert(p,s);
+    return *this;
+}
+
+
+void String::swap(String &s2)
+{
+    char *temp = this->c_str();
+    this->data = s2.c_str();
+    s2.data = temp;
+}
+
+
+String &String::append(const char *s)
+{
+    return this->insert(this->length,s);
+}
+
+void String::push_back(char c)
+{
+    char buf[this->length];
+    strcpy(buf,this->data);
+    delete(this->data);
+    this->length++;
+    this->data = new char[this->length+1];
+    strcpy(this->data,buf);
+    this->data[this->length-1] = c;
+    this->data[this->length] = '\0';
+}
+
+String To_string(int n)
+{
+    char ar[5]; 
+    sprintf(ar,"%d",n);
+    return String(ar);
+}
+String To_string(double f)
+{
+    char ar[20];
+    sprintf(ar,"%lf",f);
+    return String(ar);
+}
 int main()
 {
         
 
-    String s1 = "wh";
-    String s2 = "ng";
-    String s3 = s1 + s2;
-    cin >> s3;
-    cout << s3 << endl;
+    String s1 = "123456";
+    String s2 = "789";
+    cout << s1 << endl;
     return 0;
 }
 

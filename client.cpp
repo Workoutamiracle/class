@@ -23,13 +23,11 @@ int main()
         cout << "连接失败" << endl;
         exit(0);
     }
-
     char ch;
-    while(recv(fd,&ch,1,0) > 0) {
-        if(ch == 'a') {
-            send(fd,&ch,1,0);
-        }
-        cout << ch << endl;
+    while(cin >> ch) {
+        send(fd,&ch,1,0);
+        if(recv(fd,&ch,1,0) > 0)
+            cout << ch << endl;
     }
     
     return 0;
