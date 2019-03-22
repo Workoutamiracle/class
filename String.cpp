@@ -13,9 +13,10 @@ class String{
         String(size_t length,char ch);
         String(const char *str);
         String(const char *str,size_t length);
-        String(String &str);
         String(String &str,size_t index,size_t length);
         String(iterator begin,iterator end);
+
+        String(String const  &str);
 
         //普通函数
         char *c_str() const;
@@ -35,15 +36,17 @@ class String{
 
         //合并函数
 
-        String operator+(const String &s2);
+        String operator+(String &s2);
         String operator+(const char *str);
 
         //赋值操作
-        String &operator=(String &s2);
+        String &operator=(const String &s2);
         String &operator=(const char *str);
 
         String operator+=(String &s2);
         String operator+=(const char *str);
+
+        friend istream& operator>>(istream &is,String &str);
         
             
         //析构函数
@@ -274,7 +277,8 @@ String::String(const char *str,size_t length)
     }
     
 }
-String::String(String &str)
+/*
+String::String(String const &str)
 {
     cout << "1" << endl;
     if(str.size() == 0) {
@@ -289,6 +293,7 @@ String::String(String &str)
         data[str.size()] = '\0';
     }
 }
+*/
 String::String(String &str,size_t index,size_t length)
 {
     if(str.size() == 0 || index < 0) {
@@ -386,9 +391,10 @@ bool String::operator!=(String &s2)
     return !(*this == s2);
 }
 
-String String::operator+(const String &s2)
+String String::operator+(String &s2)
 {
     
+    cout << "5" << endl;
     long l = this->length + s2.size();
     char ar[l];
 
@@ -431,7 +437,7 @@ String &String::operator=(const char *str)
     return *this;
 }
 
-String &String::operator=(String &s2)
+String &String::operator=(const String &s2)
 {
     cout << "2" << endl;
     return *this = s2.c_str();
@@ -457,17 +463,30 @@ ostream& operator<<(ostream &os,const String &str)
     }
     return os;
 }
-
+istream& operator>>(istream &is,String &str)
+{
+    if(str.size()) {
+        //删除原有内存空间
+        delete(str.data);        
+    }
+    char buf[100];
+    cin >> buf;
+    str.data = new char[strlen(buf)+1];
+    strcpy(str.data,buf);
+    str.length = strlen(buf);
+    str.data[str.length] = strlen(buf);
+    return is;
+}
 
 int main()
 {
         
 
-    
-    String s4;
-    s4 = "wh";
-    String s5 = "wh";
-
+    String s1 = "wh";
+    String s2 = "ng";
+    String s3 = s1 + s2;
+    cin >> s3;
+    cout << s3 << endl;
     return 0;
 }
 
