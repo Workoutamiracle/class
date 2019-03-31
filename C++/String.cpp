@@ -9,7 +9,11 @@ class String{
         size_t length;
         char *data;
     public:
+        //引用类型
+        typedef char& reference;
+        //迭代器类型
         class iterator;
+
         size_t npos = -1;
         //构造函数
         String();
@@ -98,6 +102,14 @@ class String{
         iterator end() const{
             return iterator(this,length);
         }
+        //引用操作
+        char &front() const{
+            return (this->data)[0];
+        }  
+        char &back() const{
+            return (this->data)[length-1];
+        }
+
 
         //迭代器类
         class iterator{
@@ -251,61 +263,7 @@ class String{
                 size_t index;
         };
         
-        //引用类型
-        class reference {
-            private:
-                String *re;
-                int index;
-            public:
-                reference() {
-                    re = NULL;
-                    index = 0;
-                }
-                reference(const reference &res) {
-                    re = res.re;
-                    index = res.index;
-                }
-                reference(String *str) {
-                    re = str;
-                    index = 0;
-                }
-                reference(String *str,size_t num) {
-                    if(num < 0) {
-                        re = NULL;
-                        index = 0;
-                    }
-                    re = str;
-                    index = num;
-                }
-
-                //运算符操作
-                reference &operator=(reference &r2) {
-                    re = r2.re;
-                    index = r2.index;
-                    return *this;
-                }
-
-                char operator+(reference &r2) {
-                    return (*re)[this->index] + (*(r2.re))[r2.index];
-                } 
-                char operator-(reference &r2) {
-                    return (*re)[this->index] - (*(r2.re))[r2.index];
-                }  
-                char operator*(reference &r2) {
-                    return (*re)[this->index] * (*(r2.re))[r2.index];
-                }  
-                char operator/(reference &r2) {
-                    return (*re)[this->index] / (*(r2.re))[r2.index];
-                }
-
-
-
-                
-            
-
-        };
-
-        
+              
 
 };
 
@@ -818,7 +776,9 @@ int main()
 
     String s1 = "123456";
     String s2 = "789";
-    cout << s1 << endl;
+    
+
+    
 
     return 0;
 }

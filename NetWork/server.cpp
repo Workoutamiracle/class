@@ -72,8 +72,8 @@ int main(int argc,char *argv[])
         int sockfd;
         
         cout << fd << endl;
+        g_lock.lock();
         while((sockfd = accept(fd,NULL,NULL)) > 0) {
-            g_lock.lock();
             cout << "线程2" << endl;
             thread t(handle,sockfd);
             t.detach();
