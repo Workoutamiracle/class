@@ -12,6 +12,7 @@
 #include <csignal>
 #include <fstream>
 #include <mutex>
+#include <netinet/tcp.h>
 
 using namespace std;
 
@@ -24,6 +25,7 @@ void handle(int sockfd)
     while((size = recv(sockfd,&ch,1,0)) > 0) {
         send(sockfd,&ch,1,0);
     }
+    close(sockfd);
 }
 void manage(int sig);
 
@@ -47,6 +49,16 @@ int main(int argc,char *argv[])
         int num = 1;
         int length = sizeof(num);
 	    setsockopt(fd,SOL_SOCKET,SO_REUSEADDR,&num,length);
+
+        int size;
+        socklen_t len;
+
+        getsockopt(fd,IPPROTO_TCP,TCP_MAXSEG,(void *)&size,&len);
+        cout << "listen前mss大小=" << size << endl;
+        size = 0;
+
+        getsockopt(fd,SOL_SOCKET,SO_RCVBUF,(void *)&size,&len);
+        cout << "listen前接收缓冲区大小=" << size << endl;
         
         if(bind(fd,(struct sockaddr *)&serv,sizeof(serv)) < 0) {
             cout << "绑定失败 " << endl;
@@ -57,6 +69,14 @@ int main(int argc,char *argv[])
             cout << "创建监听套接字失败" << endl;
             exit(0);
         }
+
+        getsockopt(fd,IPPROTO_TCP,TCP_MAXSEG,(void *)&size,&len);
+        cout << "listen后mss大小="<< size << endl;
+
+        size = 0;
+        getsockopt(fd,SOL_SOCKET,SO_RCVBUF,(void *)&size,&len);
+        cout << "listen后接收缓冲区大小=" << size << endl;
+
 
         int sockfd;
         while((sockfd = accept(fd,NULL,NULL)) > 0) {
