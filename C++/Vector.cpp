@@ -5,12 +5,15 @@
 #include <initializer_list>
 #include <algorithm>
 
+int num = 10;
 template <typename T> class Vector{
 public:
     //构造函数
-    Vector() : elements(NULL),first_free(NULL),cap(NULL) {  };
+    Vector() : elements(NULL),first_free(NULL),cap(NULL){ };
     Vector(const Vector<T> &);  //拷贝构造函数
     Vector &operator=(const Vector<T> &);   //拷贝赋值运算符
+    Vector(const Vector &&v) : elements(v.elements),cap(v.cap),first_free(v.first_free) { };              //移动构造函数
+
     ~Vector() { this->free(); };                  //析构函数
 
     //
@@ -51,18 +54,18 @@ std::pair<T*,T*> Vector<T>::alloc_n_copy(const T *b,const T *e)
     //分配新的空间
     auto data = alloc.allocate(e-b);
     //将b,e范围内的元素拷贝到以data为起始位置的已分配空间上并返回起始地址和尾部地址
-    return {data,uninitialized_copy_n(b,e,data)};
+    return {data,std::uninitialized_copy(b,e,data)};
 }
 template <typename T>
-void Vector<T>::free()
+void Vector<T>::free() 
 {
     if(elements) {
         //对所有已构造的空间执行析构函数
-        for(auto p = first_free;p >= elements;--p)
-            alloc.destroy(p);
+        for(auto p = first_free;p != elements;) {
+            alloc.destroy(--p);
+        }
         //回收空间
         alloc.deallocate(elements,cap-elements);
-
     }
 }
 template <typename T>    
@@ -75,7 +78,7 @@ void Vector<T>::reallocate()
     //将数据从旧内存移动到新内存
     auto dest = newdata;
     auto elem = elements;
-    for(size_t i = 0;i < size();++i)
+    for(size_t i = 0;i != size();++i)
         alloc.construct(dest++,std::move(*elem++));
     //释放旧空间
     this->free();
@@ -87,14 +90,16 @@ void Vector<T>::reallocate()
 template <typename T>
 Vector<T>::Vector(const Vector<T> &V)
 {
-    auto newdata = alloc_n_copy(V.begin(),V.end());
+    auto newdata = alloc_n_copy(V.elements,V.first_free);
     elements = newdata.first;
     cap = first_free = newdata.second;
 }
+
 template <typename T>
 Vector<T>&  Vector<T>::operator=(const Vector<T> &V)
 {
-    auto data = alloc_n_copy(V.begin(),V.end());
+    
+    auto data = alloc_n_copy(V.elements,V.first_free);
     this->free();
     elements = data.first;
     first_free = cap = data.second;
@@ -103,13 +108,10 @@ Vector<T>&  Vector<T>::operator=(const Vector<T> &V)
 
 int main()
 {
-    Vector<std::string> v1;
-    v1.push_back("wh");
-    v1.push_back("gl");
-    auto p = v1.begin();
-    ++p;
-    std::cout << *p << std::endl;
+    Vector<std::string> v;
+    v.push_back("wh");
 
+    auto p = std::move(v);
     return 0;
 }
 
