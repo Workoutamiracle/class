@@ -50,6 +50,7 @@ constexpr size_t Size(const T (&arr)[N])
 
 template <typename T> class Blob{
     template <typename X> friend class BlobPtr;
+    friend bool operator==(const Blob<T> &b1,const Blob<T> &b2);
 public:
     typedef T value_type;
     typedef typename std::vector<T>::size_type size_type;
@@ -89,11 +90,26 @@ public:
     //递增递减运算符
     BlobPtr operator++();
     BlobPtr operator--();
+    //关系运算符
 private:
     std::shared_ptr<std::vector<T>> check(size_type,const std::string&) const;
     std::weak_ptr<std::vector<T>> wptr;
     std::size_t curr;
 };
+
+//template <typename T> class Blob;
+//template <typename T> class BlobPtr;
+template <typename T>
+bool operator==(const Blob<T> &b1,const Blob<T> &b2)
+{
+    return b1.data == b2.data;
+}
+template <typename T>
+bool operator!=(const Blob<T> &b1,const Blob<T> &b2)
+{
+    return !(b1 == b2);
+}
+
 template <typename T>
 std::shared_ptr<std::vector<T>> BlobPtr<T>::check(size_type i,const std::string& msg) const
 {

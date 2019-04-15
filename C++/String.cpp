@@ -138,6 +138,7 @@ class String{
                 }
                 
                 char operator*() {
+                    cout << "1" << endl;
                     return *(it->data+index);
                 }
 
@@ -777,8 +778,8 @@ int main()
     String s1 = "123456";
     String s2 = "789";
     
-
-    
+    String *p = &s1;
+    cout << *p << endl;
 
     return 0;
 }
