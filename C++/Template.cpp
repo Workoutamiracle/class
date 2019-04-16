@@ -48,9 +48,18 @@ constexpr size_t Size(const T (&arr)[N])
     return N;
 }
 
+template <typename T> class Blob;
+template <typename T> class BlobPtr;
+
+template <typename T>
+bool operator==(const Blob<T> &b1,const Blob<T> &b2)
+{
+    return b1.data == b2.data;
+}
+
 template <typename T> class Blob{
     template <typename X> friend class BlobPtr;
-    friend bool operator==(const Blob<T> &b1,const Blob<T> &b2);
+    friend bool operator== <T>(const Blob<T> &,const Blob<T> &);
 public:
     typedef T value_type;
     typedef typename std::vector<T>::size_type size_type;
@@ -96,14 +105,6 @@ private:
     std::weak_ptr<std::vector<T>> wptr;
     std::size_t curr;
 };
-
-//template <typename T> class Blob;
-//template <typename T> class BlobPtr;
-template <typename T>
-bool operator==(const Blob<T> &b1,const Blob<T> &b2)
-{
-    return b1.data == b2.data;
-}
 template <typename T>
 bool operator!=(const Blob<T> &b1,const Blob<T> &b2)
 {
@@ -135,12 +136,19 @@ BlobPtr<T> BlobPtr<T>::operator--()
     return ret;
 }
 
+template <typename T>
+void ForEach(T &t)
+{
+    for(auto e : t)
+        std::cout << e << std::endl;
+    for(auto q = t.begin();q != t.end();++q)
+        std::cout << *q << std::endl;
+}
 
 int main()
 {
-    Blob<std::string> b = {"123","456","789"};
-    BlobPtr<std::string> p(b,0);
-    std::cout << *p << std::endl;
+    std::vector<std::string> v = {"12","34","56"};
+    ForEach(v);
     return 0;
 }
 
