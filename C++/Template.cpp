@@ -145,10 +145,29 @@ void ForEach(T &t)
         std::cout << *q << std::endl;
 }
 
+template <typename T> class DebugDelete{
+public:
+    DebugDelete(std::ostream &s) : os(s) {  }
+    
+    void operator()(T *p)const {
+        os << "deleting unique_ptr" << std::endl;
+        delete p;
+    }
+private:
+    std::ostream &os;
+};
+
+class A{
+    A() { std::cout << "A" << std::endl; }
+};
+void f(A a)
+{
+    std::cout << "a" << std::endl;
+}
 int main()
 {
-    std::vector<std::string> v = {"12","34","56"};
-    ForEach(v);
+    A *a;
+    std::cout << sizeof(A) << std::endl;
     return 0;
 }
 
