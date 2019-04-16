@@ -10,6 +10,7 @@ template <typename T> class Vector{
 public:
     //构造函数
     Vector() : elements(NULL),first_free(NULL),cap(NULL){ };
+    Vector(std::initializer_list<T>);
     Vector(const Vector<T> &);  //拷贝构造函数
     Vector &operator=(const Vector<T> &);   //拷贝赋值运算符
     Vector(const Vector &&v) : elements(v.elements),cap(v.cap),first_free(v.first_free) { };              //移动构造函数
@@ -38,6 +39,14 @@ private:
     T *first_free;//指向已分配空间的未构造位置
     T *cap;     //指向尾元素
 };
+//列表初始化
+template <typename T>
+Vector<T>::Vector(std::initializer_list<T> l)
+{
+    auto newdata = alloc_n_copy(l.begin(),l.end());
+    elements = newdata.first;
+    first_free = cap = newdata.second;
+}
 //初始化类模板静态成员
 template <typename T>
 std::allocator<T> Vector<T>::alloc;
@@ -111,10 +120,11 @@ Vector<T>&  Vector<T>::operator=(const Vector<T> &V)
 
 int main()
 {
-    Vector<std::string> v;
-    v.push_back("wh");
+    Vector<std::string> v({"12","34","56"});
+    
 
-    auto p = std::move(v);
+    for(auto e : v)
+        std::cout << e << std::endl;
     return 0;
 }
 

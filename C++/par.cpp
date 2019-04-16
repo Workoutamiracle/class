@@ -35,6 +35,7 @@ public:
 };
 int main()
 {
+    vector<int> v;
     return 0;
 }
 
