@@ -3,6 +3,7 @@
 #include <vector>
 #include <list>
 #include <memory>
+#include <utility>
 
 template <typename T> 
 int compare(const T &v1,const T &v2)
@@ -157,17 +158,82 @@ private:
     std::ostream &os;
 };
 
-class A{
-    A() { std::cout << "A" << std::endl; }
-};
-void f(A a)
+template <typename T>
+bool Compare(const T &lhs,const T &rhs)
 {
-    std::cout << "a" << std::endl;
+    return lhs < rhs;
+}
+
+template <typename T>
+auto Sum(const T& lhs,const T& rhs) ->decltype(lhs + rhs)
+{
+    return lhs+rhs;
+}
+template <typename F,typename T1,typename T2>
+void fun(F f,T1 &&lhs,T2 &&rhs)
+{
+    f(std::forward<T2>(rhs),std::forward<T1>(lhs));
+}
+void f(int &&a,int &b)
+{
+    std::cout << a << " " << ++b << std::endl;
+}
+template <typename T,typename ... Args>
+void foo(const T &t,const Args& ... rest)
+{
+
+}
+template <typename ... Args> void g(Args ... args)
+{
+    std::cout << sizeof...(Args) << std::endl;
+    std::cout << sizeof...(args) << std::endl;
+}
+
+template <typename T> std::ostream &print(std::ostream &os,const T &t)
+{
+    return os << t << std::endl;;
+}
+
+template <typename T,typename ... Args> std::ostream &print(std::ostream &os,const T &t,Args ... rest)
+{
+    os << t << ",";
+    return print(os,rest...);
+}
+
+template <typename T,typename U>
+size_t Count(const std::vector<T> &vec,const U e)
+{
+    size_t timecount = 0;
+    for(auto n : vec)
+        if(n == e)
+            timecount++;
+    return timecount;
+}
+
+template<> 
+size_t Count(const std::vector<const char *> &vec,const char *val)
+{
+    size_t timecount = 0;
+    for(auto n : vec)
+        if(*n == *val)
+            timecount++;
+    return timecount;
+}
+template <typename T,typename U>
+void f(T t,U u)
+{
+
+}
+template<>
+void f(int a,double b)
+{
+
 }
 int main()
 {
-    A *a;
-    std::cout << sizeof(A) << std::endl;
+    std::vector<const char *> v= {"wh","gl","wh"};
+    std::cout << Count(v,"wh") << std::endl;
     return 0;
+
 }
 

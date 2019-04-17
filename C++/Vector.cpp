@@ -17,9 +17,9 @@ public:
 
     ~Vector() { this->free(); };                  //析构函数
 
-    //
+    //插入元素
     void push_back(const T &);
-
+    template <typename ... Args> void emplace_back(Args ... args);
     size_t size() { return first_free - elements; }
     size_t capacity() { return cap - elements; }
 
@@ -116,6 +116,14 @@ Vector<T>&  Vector<T>::operator=(const Vector<T> &V)
     elements = data.first;
     first_free = cap = data.second;
     return *this;
+}
+
+template <typename T>
+template <typename ... Args> 
+void Vector<T>::emplace_back(Args ... args)
+{
+    check_n_alloc();
+    alloc.construct(first_free++,std::forward<Args>(args)...); 
 }
 
 int main()
