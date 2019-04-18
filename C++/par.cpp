@@ -35,7 +35,11 @@ public:
 };
 int main()
 {
-    vector<int> v;
+    int i = 10;
+    shared_ptr<int> q;
+    q = make_shared<int>(i);
+    shared_ptr<int> p = q;
+    std::cout << *q << std::endl;
     return 0;
 }
 

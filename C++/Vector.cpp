@@ -8,6 +8,7 @@
 int num = 10;
 template <typename T> class Vector{
 public:
+    
     //构造函数
     Vector() : elements(NULL),first_free(NULL),cap(NULL){ };
     Vector(std::initializer_list<T>);
