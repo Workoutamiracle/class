@@ -33,13 +33,25 @@ public:
     B() { f(); }
     virtual void f2() { cout << "f2" << endl; }
 };
+void f(void)
+{
+    std::cout << "f" << std::endl;
+}
+class aa{
+public:
+    aa()=default;
+    aa(aa &t) {
+        std::cout << "aa1" << std::endl;
+    }
+    aa &operator=(aa &a) {
+        std::cout << "aa2" << std::endl; 
+        return *this;
+    }
+};
 int main()
 {
-    int i = 10;
-    shared_ptr<int> q;
-    q = make_shared<int>(i);
-    shared_ptr<int> p = q;
-    std::cout << *q << std::endl;
+    aa a;
+    aa a2 = a;
     return 0;
 }
 
