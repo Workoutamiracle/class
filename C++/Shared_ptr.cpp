@@ -107,6 +107,7 @@ void f(Shared_ptr<int> &ptr)
 
 template <typename T,typename ... Args>
 auto  Make_shared(Args && ...arg) ->Shared_ptr<T>
+//Shared_ptr<T> &Make_shared(Args && ...arg)
 {
     return Shared_ptr<T>(new T(std::forward<Args>(arg)...));
 }

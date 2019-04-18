@@ -50,8 +50,9 @@ public:
 };
 int main()
 {
-    aa a;
-    aa a2 = a;
+    int i;
+    shared_ptr<int> p = &i;
     return 0;
+    
 }
 
