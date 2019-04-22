@@ -116,6 +116,9 @@ int main()
 {
     int i = 99;
     auto p = Make_shared<int>(i);
+    
+    int *ar = new int[10];
+    delete [] ar;
     std::cout << *p << std::endl;
     return 0;
 }

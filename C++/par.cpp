@@ -37,21 +37,19 @@ void f(void)
 {
     std::cout << "f" << std::endl;
 }
-class aa{
+
+class C{
 public:
-    aa()=default;
-    aa(aa &t) {
-        std::cout << "aa1" << std::endl;
-    }
-    aa &operator=(aa &a) {
-        std::cout << "aa2" << std::endl; 
-        return *this;
-    }
+    C() = default;
+    //C(const C& c);
+
 };
+
 int main()
 {
-    int i;
-    shared_ptr<int> p = &i;
+    std::cout << sizeof(C) << std::endl;
+    C c1;
+    C c2 = c1;
     return 0;
     
 }
