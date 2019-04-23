@@ -47,10 +47,9 @@ public:
 
 int main()
 {
-    std::cout << sizeof(C) << std::endl;
-    C c1;
-    C c2 = c1;
+    std::cout << sizeof(std::shared_ptr<char>) << std::endl;
     return 0;
+
     
 }
 
