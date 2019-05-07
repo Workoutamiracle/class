@@ -45,9 +45,16 @@ public:
 
 };
 
+class a{
+    int a;
+    int b;
+};
+class aa : public a{
+
+};
 int main()
 {
-    std::cout << sizeof(std::shared_ptr<char>) << std::endl;
+    std::cout << sizeof(aa) << std::endl;
     return 0;
 
     
