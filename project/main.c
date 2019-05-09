@@ -11,8 +11,7 @@ int main()
     else {
         printf("Correct password\n");
     }
-    int a;
-    scanf("%d",&a);
+    
     return 0;
 }
 

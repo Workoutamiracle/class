@@ -1,63 +1,58 @@
 #include <iostream>
-#include <string>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <arpa/inet.h>
+#include <thread>
+#include <sys/ipc.h>
+#include <sys/msg.h>
+#include <string.h>
+#include <stdlib.h>
 #include <unistd.h>
-#include <netinet/tcp.h>
 
-using namespace std;
-int Recv(int fd,string &s)
+
+#define FILEPATH "/etc/passwd"
+#define PROJID 1234
+struct Buf{
+    long mtype;
+    char mtext[BUFSIZ];
+};
+
+void handle(int msgid,long type,char *file_buf)
 {
-    int l = 0;
-    int size = 0;
-    char *str = NULL;
-    if((l += recv(fd,&size,sizeof(size),0)) > 0) {
-        str = new char[size];
-        recv(fd,str,size,0);
+    Buf buf;
+    buf.mtype = type;
+    std::cout << "文件路径:" << file_buf << std::endl;
+    std::cout << "进程id:" << type << std::endl;
+    std::cin >> buf.mtext;
+
+    while(msgsnd(msgid,&buf,sizeof(buf)-sizeof(long),0) != -1) {
+        std::cin >> buf.mtext; 
     }
-    s = str;
-    delete(str);
-    return l;
 }
 int main()
-{   
-    int fd = socket(AF_INET,SOCK_STREAM,0);
-    if(fd < 0) {
-        cout << "套接字创建失败" << endl;
-        exit(0);
-    }
+{
+    int msgid;
+    key_t key;
 
-    struct sockaddr_in servaddr;
-    servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
-    servaddr.sin_port = htons(5678);
-
-    if(connect(fd,(const struct sockaddr *)&servaddr,sizeof(servaddr)) < 0) {
-        cout << "连接失败" << endl;
-        exit(0);
+    key = ftok(FILEPATH, PROJID);
+    if (key == -1) {
+        perror("ftok()");
+        exit(1);
     }
     
-    //连接成功
-    cout << "127.0.0.1:6379> ";
-    string command;
-    int size;
-    string s;
-    while(getline(cin,command)) {
-        size = command.size();
-        //发送命令
-        if((send(fd,&size,sizeof(size),0)) > 0)
-            send(fd,command.c_str(),size,0);
-        
-        //接收信息
-        if(Recv(fd,s) > 0)
-            cout << s << endl;
-        command = "";
-        cout << "127.0.0.1:6379> ";
+    //创建消息队列
+    msgid = msgget(key, IPC_CREAT|IPC_EXCL|0600);
+    if (msgid == -1) {
+        perror("msgget()");
+        exit(1);
     }
 
+    Buf buf;
 
- 
+    //等待hook程序发送文件路径以及进程id
+    while(msgrcv(msgid,&buf,sizeof(buf) - sizeof(long),0,0) != -1) {
+        //创建线程处理来自此hook程序的请求
+        std::thread t(handle,msgid,buf.mtype,buf.mtext);
+        t.detach();
+    }
+
     return 0;
 }
 
