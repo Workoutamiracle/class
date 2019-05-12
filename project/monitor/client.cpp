@@ -1,4 +1,6 @@
 #include <iostream>
+#include <fstream>
+#include <istream>
 #include <thread>
 #include <sys/ipc.h>
 #include <sys/msg.h>
@@ -7,7 +9,7 @@
 #include <unistd.h>
 
 
-#define FILEPATH "/etc/passwd"
+#define FILEPATH "/home"
 #define PROJID 1234
 
 #define OPEN 1  //open请求
@@ -18,7 +20,7 @@
 
 struct data{
     long type;
-    char mtext[BUFSIZ];
+    char mtext[BUFSIZ-8];
 };
 
 struct Buf {
@@ -26,14 +28,15 @@ struct Buf {
     struct data mdata;
 };
 
-int alive;
-void Send_handle(int msgid,struct Buf buf,int fd)
+int alive = 1;
+void Send_handle(int msgid,Buf buf)
 {
+    Buf Recv_buf;
+    Recv_buf.mtype = buf.mdata.type;
+
     //检测文件所在目录是否为被监控目录
     if(strncmp(FILEPATH,buf.mdata.mtext,strlen(FILEPATH))) {
         //非被监控目录
-        struct Buf Recv_buf;
-        Recv_buf.mtype = buf.mtype;
         Recv_buf.mdata.type = INVALID;
         if(msgsnd(msgid,&Recv_buf,sizeof(Buf) - sizeof(long),0) == -1) {
             perror("msgsnd");
@@ -46,9 +49,7 @@ void Send_handle(int msgid,struct Buf buf,int fd)
     //检测全局变量确定与服务器连接是否断开
     if(!alive) {
         //与服务器连接已断开，向消息队列发送ALIVE应答
-        struct Buf Recv_buf;
-        Recv_buf.mtype = buf.mtype;
-        Recv_buf.mdata.type = ALIVE;
+       Recv_buf.mdata.type = ALIVE;
         if(msgsnd(msgid,&Recv_buf,sizeof(Buf) - sizeof(long),0) == -1) {
             perror("msgsnd");
             exit(1);
@@ -56,8 +57,26 @@ void Send_handle(int msgid,struct Buf buf,int fd)
         return;
     }
 
+    //打开文件,改变其内容
+    
+    std::fstream file(buf.mdata.mtext,std::ios::out);
+
+    std::string new_file = "1234567";
+    file << new_file;
+    file.close();
+
+    std::cout << "修改完成,发送通知" << std::endl;
+
+    //发送修改完成通知给hook程序
+    Recv_buf.mdata.type = FINISH;
+    if(msgsnd(msgid,&Recv_buf,sizeof(Buf) - sizeof(long),0) == -1) {
+            perror("msgsnd");
+            exit(1);
+    }
+
+
     //将文件内容发送给服务器
-    SendData();
+ //   SendData();
 
     //备份完成等待hook程序发送close请求
     if(msgrcv(msgid,&buf,sizeof(buf) - sizeof(long),buf.mtype,0) != -1) {
@@ -66,14 +85,15 @@ void Send_handle(int msgid,struct Buf buf,int fd)
         case OPEN:
             //...
             break;
-        case CLOSE:
+   //     case CLOSE:
             //向服务器发送close请求
-            SendData();
+  //          SendData();
             
         }
     } 
 }
 
+/*
 //从服务器接收数据并处理
 void Recv_handle(int msgid,struct Buf buf,int fd)
 {
@@ -95,6 +115,7 @@ void Recv_handle(int msgid,struct Buf buf,int fd)
         }
     }
 }
+*/
 int main()
 {
     int msgid;
@@ -107,18 +128,18 @@ int main()
     }
     
     //创建消息队列
-    msgid = msgget(key, IPC_CREAT|IPC_EXCL|0600);
+    msgid = msgget(key, IPC_CREAT|0600);
     if (msgid == -1) {
         perror("msgget()");
         exit(1);
     }
 
-    struct Buf buf;
+    Buf buf;
     //创建线程处理来自服务器的应答
     
 
     //等待hook程序发送文件路径以及进程id
-    while(msgrcv(msgid,&buf,sizeof(buf) - sizeof(long),0,0) != -1) {
+    while(msgrcv(msgid,&buf,sizeof(buf) - sizeof(long),2,0) != -1) {
         //创建线程处理来自此hook程序的请求
         std::thread t(Send_handle,msgid,buf);
         t.detach();

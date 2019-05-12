@@ -5,7 +5,7 @@ int main()
 {
 
     int file;
-    if((file = open("1.txt",O_RDONLY)) != -1){
+    if((file = open("./1.txt",O_RDONLY)) != -1){
         printf("incorrect password\n");
     }
     else {

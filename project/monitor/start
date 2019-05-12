@@ -1,0 +1,3 @@
+g++ client.cpp -lpthread -g -o client;
+gcc -fPIC -shared -o hook.so hook.c -ldl;
+

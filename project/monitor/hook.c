@@ -7,10 +7,10 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <limits.h>
+#include <errno.h>
 
-#define FILEPATH "/etc/passwd"
+#define FILEPATH "/home"
 #define PROJID 1234
-#define MSG "hello world!"
 
 #define OPEN 1  //open请求
 #define CLOSE 2 //close请求
@@ -20,7 +20,7 @@
 
 struct data{
     long type;
-    char mtext[BUFSIZ];
+    char mtext[BUFSIZ-8];
 };
 
 struct Buf {
@@ -67,31 +67,43 @@ int open(const char *s1,int mode)
     realpath(s1,buf.mdata.mtext); 
     
     int msgid = GetKey();
+    printf("msgid = %d\n",msgid);
 
     //发送OPEN请求到消息队列
-    buf.mtype = getpid();
-    buf.mdata.type = OPEN;
+    buf.mtype = 2;
+    buf.mdata.type = getpid();
 
-    if (msgsnd(msgid, &buf, sizeof(buf) - sizeof(long), 0) == -1) {
+    printf("%ld %s\n",buf.mtype,buf.mdata.mtext);
+
+    if (msgsnd(msgid, (void *)&buf, sizeof(struct Buf) - sizeof(long), 0) < 0) {
         perror("msgsnd()");
+        printf("%d",errno);
         exit(1);
     }
 
     //已将open请求发送给客户端,等待客户端返回通知
     struct Buf Recv_buf;
 
-    if(msgrcv(msgid,&Recv_buf,sizeof(Recv_buf) - sizeof(long),getpid(),0) != -1) {
-        switch(Recv_buf.mdata.type) {
+    while(1) {
+        int i = 0;
+        if((i = msgrcv(msgid,&Recv_buf,sizeof(Recv_buf) - sizeof(long),getpid(),0)) > 0) {
+            switch(Recv_buf.mdata.type) {
             case ALIVE:
+                printf("alive\n");
                 //服务器与客户端连接已断开，拒绝任何程序打开监控目录下的所有文件
                 return -1;
             case INVALID:
+                printf("invalid\n");
                 //文件非监控目录下,直接返回其描述符
                 break;
             case FINISH:
+                printf("finish\n");
                 //服务器已备份完文件内容，可返回文件描述符
                 break; 
+            }
         }
+        if(i)
+            break;
     }
     
     static void *handle = NULL;
