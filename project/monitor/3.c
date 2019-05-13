@@ -1,15 +1,9 @@
 #include <stdio.h>
 
-void func(size_t n,int a[][n]) {
-    a[0][0] = 1;
-}
-
-
 int main()
 {
-    int a[][2] = {2,0,1,9};
-    func(sizeof(a),a);
-    printf("%d\n",a[0][0]);
+    const int b = 10;
+    //自行添加语句，改变变量b的值
     return 0;
 }
 

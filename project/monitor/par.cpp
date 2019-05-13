@@ -8,11 +8,7 @@ int main()
 
     std::fstream file(filename,std::ios::out);
     
-    if(file.is_open())
-        std::cout << "open" << std::endl;
-    else
-        std::cout << "not" << std::endl;
-    file << "123456";
+    file << "12345678";
     file.close();
     return 0;
 }

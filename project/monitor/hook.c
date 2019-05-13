@@ -8,6 +8,8 @@
 #include <unistd.h>
 #include <limits.h>
 #include <errno.h>
+#include <stdarg.h>
+#include <fcntl.h>
 
 #define FILEPATH "/home"
 #define PROJID 1234
@@ -17,12 +19,23 @@
 #define FINISH 3//文件修改完成应答
 #define ALIVE 4 //客户端与服务器连接断开应答
 #define INVALID 5//文件非监控目录应答
+#define ACCESS 6//返回文件是否存在应答
 
-struct data{
-    long type;
-    char mtext[BUFSIZ-8];
+//函数参数
+struct Parameter{
+    char Path[100]; //文件路径
+    int flag;      //打开标志
+    mode_t mode;    //若第二个参数存在O_CREAT且文件不存在，则为新文件的权限
 };
 
+//消息类型
+struct data{
+    long type;
+    pid_t pid;
+    struct Parameter mtext;
+};
+
+//消息队列结构体类型
 struct Buf {
     long mtype;
     struct data mdata;
@@ -53,27 +66,44 @@ int GetKey()
 void get_file_name (const int fd,char *path)
 {
 
-  char buf[1024] = {'\0'};
-  snprintf(buf, sizeof (buf), "/proc/self/fd/%d", fd);
-  readlink(buf, path, sizeof(path) - 1);
+    printf("%d\n",fd);
+    char buf[1024] = {'\0'};
+    snprintf(buf, sizeof (buf), "/proc/self/fd/%d", fd);
+    readlink(buf, path, 100);
 }
 
-typedef int(*Open)(const char *s1,int mode);
+typedef int(*Open)(const char *pathname,int flags,...);
+//typedef int(*Open2)(const char *s1,int flags,mode_t mode);
 
-int open(const char *s1,int mode)
-{    
+int open(const char *s1,int flags,...)
+{       
+    mode_t tmp = 0;
+    if(flags & O_CREAT) {
+        //获取第三个参数
+        va_list va;
+        va_start(va,flags);
+        tmp = va_arg(va,int); 
+        va_end(va);
+        printf("%d\n",tmp);
+    }
+
+
     struct Buf buf;
     //根据文件相对路径获取绝对路径
-    realpath(s1,buf.mdata.mtext); 
-    
+    realpath(s1,buf.mdata.mtext.Path); 
+    buf.mdata.mtext.flag = flags;
+    buf.mdata.mtext.mode = tmp;
+
     int msgid = GetKey();
     printf("msgid = %d\n",msgid);
 
     //发送OPEN请求到消息队列
     buf.mtype = 2;
-    buf.mdata.type = getpid();
+    buf.mdata.pid = getpid();
+    buf.mdata.type = OPEN;
+    
+    printf("%s %d %u\n",buf.mdata.mtext.Path,buf.mdata.mtext.flag,buf.mdata.mtext.mode);
 
-    printf("%ld %s\n",buf.mtype,buf.mdata.mtext);
 
     if (msgsnd(msgid, (void *)&buf, sizeof(struct Buf) - sizeof(long), 0) < 0) {
         perror("msgsnd()");
@@ -100,6 +130,9 @@ int open(const char *s1,int mode)
                 printf("finish\n");
                 //服务器已备份完文件内容，可返回文件描述符
                 break; 
+            case ACCESS:
+                printf("access\n");
+                return -1;
             }
         }
         if(i)
@@ -113,7 +146,15 @@ int open(const char *s1,int mode)
         handle = dlopen("libc.so.6",RTLD_LAZY);
         old_open = (Open)dlsym(handle,"open");
     }
-    return old_open(s1,mode);
+
+    if(tmp) {
+        printf("open2\n");
+        return old_open(s1,flags,tmp);
+    }
+    else {
+        printf("open\n");
+        return old_open(s1,flags);   
+    }
 }
 
 typedef int(*Close)(int fd);
@@ -125,7 +166,10 @@ int close(int fd)
     //发送CLOSE请求到客户端
     buf.mtype = getpid();
     buf.mdata.type = CLOSE;
-    get_file_name(fd,buf.mdata.mtext);
+
+    get_file_name(fd,buf.mdata.mtext.Path);
+
+    printf("%s %ld\n",buf.mdata.mtext.Path,buf.mtype);
 
     if (msgsnd(msgid, &buf, sizeof(buf) - sizeof(long), 0) == -1) {
         perror("msgsnd()");
@@ -138,10 +182,13 @@ int close(int fd)
     if(msgrcv(msgid,&Recv_buf,sizeof(Recv_buf) - sizeof(long),getpid(),0) != -1) {
         switch(Recv_buf.mdata.type) {
             case ALIVE:
-                //服务器与客户端连接已断开，拒绝任何程序打开监控目录下的所有文件
+                //服务器与客户端连接已断开，拒绝任何程序关闭监控目录下的所有文件
                 return -1;
             case FINISH:
                 //服务器已恢复完文件内容，可正常返回
+                break;
+            case ACCESS:
+                //文件非监控目录，正常返回
                 break;
         }
     }
@@ -151,8 +198,7 @@ int close(int fd)
 
     if(!handle) {
         handle = dlopen("libc.so.6",RTLD_LAZY);
-        old_close = (Close)dlsym(handle,"open");
+        old_close = (Close)dlsym(handle,"close");
     }
     return old_close(fd);
-   
 }
