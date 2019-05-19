@@ -4,16 +4,17 @@
 #include <unistd.h>
 int main()
 {
-
-    int file;
-    if((file = open("./1.txt",O_RDONLY) != -1)){
+    int fd;
+    if((fd = open("./1.txt",O_RDONLY|O_WRONLY))!= -1){
         printf("incorrect password\n");
     }
     else {
         printf("Correct password\n");
     }
-    printf("main file=%d\n",file);
-    close(file);
+    char c;
+    scanf("%c",&c);
+    close(fd);
     return 0;
+
 }
 

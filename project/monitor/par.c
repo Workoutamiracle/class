@@ -12,12 +12,12 @@ void func(const char *s1,int flags,...)
     mode_t tmp = va_arg(va,int);
     printf("%d\n",tmp);
 }
-void get_file_name (const int fd,char *path)
+void get_file_name (const int fd,int n,char path[n])
 {
 
   char buf[1024] = {'\0'};
   snprintf(buf, sizeof (buf), "/proc/self/fd/%d", fd);
-  readlink(buf, path, 100);
+  readlink(buf, path, n);
 }
 
 int main()
@@ -25,11 +25,12 @@ int main()
     int fd = open("./1.txt",O_RDONLY);
     printf("%d\n",fd);
     char path[100];
+    memset(path,0,sizeof(path));
 
-    get_file_name(fd,path);
-    printf("%zd\n",strlen(path));
-    path[strlen(path)-2] = '\0';
-    printf("%s\n",path);
+
+    get_file_name(fd,sizeof(path),path);
+    printf("%zd\n%s\n",strlen(path),path);
+    
     close(fd);
     return 0;
 }

@@ -41,7 +41,7 @@ private:
 };
 
 //http操作类
-class HTTP{
+class HTTP {
 public:
     HTTP(string &_url) : url(_url) { Parse(); }
     //发送http请求头
@@ -54,7 +54,7 @@ private:
     //解析url链接
     void Parse();
     //与远程服务器建立连接
-    int COnnect();
+    int Connect();
 
     string url; //下载链接
     string port = "80";   //服务器端口号

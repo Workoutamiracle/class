@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <limits.h>
 
 
 #define FILEPATH "/home"
@@ -40,34 +41,63 @@ struct Buf {
     struct data mdata;
 };
 
+
+//消息内容
+struct Packet{
+    //消息请求类型
+    int type;
+    //客户端id
+    pid_t pid;
+    //对文件的操作
+    int flag;
+    //操作权限
+    mode_t mode;
+    //文件路径
+    char pathName[PATH_MAX];
+
+};
+//消息对垒格式的包
+struct Msg{
+    //消息类型
+    long type;
+    //消息数据
+    Packet buf;
+};
+
+
 int alive = 1;
 std::string word;
-void Send_handle(int msgid,Buf buf)
+void Send_handle(int msgid,Msg msg)
 {
+    Buf buf;
     Buf Recv_buf;
+    Msg Recv_msg;
     //将消息类型按进程id区分
     Recv_buf.mtype = buf.mdata.pid;
+    std::cout << "旧数据="<<buf.mdata.mtext.flag << std::endl;
+    std::cout << "旧数据="<<buf.mdata.mtext.mode << std::endl;
 
-    std::cout << buf.mdata.mtext.flag << std::endl;
-    std::cout << buf.mdata.mtext.mode << std::endl;
+    Recv_msg.type = msg.buf.pid;
+    std::cout << "新数据="<<msg.buf.flag << std::endl;
+    std::cout << "新数据="<<msg.buf.mode << std::endl;
 
     //检测文件是否存在且函数参数是否含有O_CREAT
-    if(access(buf.mdata.mtext.Path,F_OK) == -1) {
+    if(access(msg.buf.pathName,F_OK) == -1) {
         //文件不存在且含有O_CREAT
-        if(buf.mdata.mtext.flag & O_CREAT) {
+        if(msg.buf.flag & O_CREAT) {
             std::cout << "文件不存在,创建文件" << std::endl;
             std::cout << buf.mdata.mtext.flag << std::endl;
             std::cout << buf.mdata.mtext.mode << std::endl;
             //创建文件
-            if(open(buf.mdata.mtext.Path,buf.mdata.mtext.flag,buf.mdata.mtext.mode) == -1) {
+            if(open(msg.buf.pathName,msg.buf.flag,msg.buf.mode) == -1) {
                 perror("create");
                 exit(0);
             }
         }
         else {
             std::cout << "文件不存在,不能创建文件" << std::endl;
-            Recv_buf.mdata.type = ACCESS;
-            if(msgsnd(msgid,&Recv_buf,sizeof(Buf) - sizeof(long),0) == -1) {
+            Recv_msg.buf.type = ACCESS;
+            if(msgsnd(msgid,&Recv_msg,sizeof(Msg) - sizeof(long),0) == -1) {
                 perror("msgsnd");
                 exit(1);
             }
@@ -76,10 +106,10 @@ void Send_handle(int msgid,Buf buf)
     }
 
     //检测文件所在目录是否为被监控目录
-    if(strncmp(FILEPATH,buf.mdata.mtext.Path,strlen(FILEPATH))) {
+    if(strncmp(FILEPATH,msg.buf.pathName,strlen(FILEPATH))) {
         //非被监控目录
-        Recv_buf.mdata.type = INVALID;
-        if(msgsnd(msgid,&Recv_buf,sizeof(Buf) - sizeof(long),0) == -1) {
+        Recv_msg.buf.type = INVALID;
+        if(msgsnd(msgid,&Recv_msg,sizeof(Msg) - sizeof(long),0) == -1) {
             perror("msgsnd");
             exit(1);
         }
@@ -90,20 +120,20 @@ void Send_handle(int msgid,Buf buf)
     //检测全局变量确定与服务器连接是否断开
     if(!alive) {
         //与服务器连接已断开，向消息队列发送ALIVE应答
-       Recv_buf.mdata.type = ALIVE;
-        if(msgsnd(msgid,&Recv_buf,sizeof(Buf) - sizeof(long),0) == -1) {
+       Recv_msg.buf.type = ALIVE;
+        if(msgsnd(msgid,&Recv_msg,sizeof(Msg) - sizeof(long),0) == -1) {
             perror("msgsnd");
             exit(1);
         }
         return;
     }
     //打开文件，将其内容保存下来
-    std::fstream file(buf.mdata.mtext.Path,std::ios::in);
+    std::fstream file(msg.buf.pathName,std::ios::in);
     file >> word;
     file.close();
 
     //打开文件,改变其内容
-    file.open(buf.mdata.mtext.Path,std::ios::out);
+    file.open(msg.buf.pathName,std::ios::out);
     std::string new_file = "1234567";
     file << new_file;
     file.close();
@@ -111,8 +141,8 @@ void Send_handle(int msgid,Buf buf)
     std::cout << "修改完成,发送通知" << std::endl;
 
     //发送修改完成通知给hook程序
-    Recv_buf.mdata.type = FINISH;
-    if(msgsnd(msgid,&Recv_buf,sizeof(Buf) - sizeof(long),0) == -1) {
+    Recv_msg.buf.type = FINISH;
+    if(msgsnd(msgid,&Recv_msg,sizeof(Msg) - sizeof(long),0) == -1) {
             perror("msgsnd");
             exit(1);
     }
@@ -122,30 +152,39 @@ void Send_handle(int msgid,Buf buf)
  //   SendData();
 
     //备份完成等待hook程序发送close请求
-    if(msgrcv(msgid,&buf,sizeof(buf) - sizeof(long),buf.mtype,0) != -1) {
+    if(msgrcv(msgid,&msg,sizeof(msg) - sizeof(long),msg.buf.pid,0) != -1) {
+        std::cout << "收到close请求" << std::endl;
         //检测文件所在目录是否为被监控目录
-        if(strncmp(FILEPATH,buf.mdata.mtext.Path,strlen(FILEPATH))) {
+        if(strncmp(FILEPATH,msg.buf.pathName,strlen(FILEPATH))) {
             //非被监控目录
-            Recv_buf.mdata.type = ACCESS;
-            if(msgsnd(msgid,&Recv_buf,sizeof(Buf) - sizeof(long),0) == -1) {
+            Recv_msg.buf.type = ACCESS;
+            if(msgsnd(msgid,&Recv_msg,sizeof(Msg) - sizeof(long),0) == -1) {
                 perror("msgsnd");
                 exit(1);
             }
             return;
-
         }
+        
         //同一进程未调用close之前又调用open打开相同文件
-        switch(buf.mtype) {
+        switch(msg.buf.type) {
         case OPEN:
             //...
             break;
         case CLOSE:
             //向服务器发送close请求
             //SendData();
+            //修改文件内容
             std::cout << "源文件内容为:" << word << std::endl;
-            file.open(buf.mdata.mtext.Path,std::ios::out);
+            file.open(msg.buf.pathName,std::ios::out);
             file << word;
             file.close();
+            //修改完成返回FINISH
+            Recv_msg.buf.type = FINISH;
+            if(msgsnd(msgid,&Recv_msg,sizeof(Msg) - sizeof(long),0) == -1) {
+                perror("msgsnd");
+                exit(1);
+            }
+            
             break;
         }
     } 
@@ -195,13 +234,14 @@ int main()
     }
 
     Buf buf;
+    Msg msg;
     //创建线程处理来自服务器的应答
     
 
     //等待hook程序发送文件路径以及进程id
-    while(msgrcv(msgid,&buf,sizeof(buf) - sizeof(long),2,0) != -1) {
+    while(msgrcv(msgid,&msg,sizeof(msg) - sizeof(long),1,0) != -1) {
         //创建线程处理来自此hook程序的请求
-        std::thread t(Send_handle,msgid,buf);
+        std::thread t(Send_handle,msgid,msg);
         t.detach();
     }
 

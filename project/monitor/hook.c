@@ -41,6 +41,27 @@ struct Buf {
     struct data mdata;
 };
 
+//消息内容
+struct Packet{
+    //消息请求类型
+    int type;
+    //客户端id
+    pid_t pid;
+    //对文件的操作
+    int flag;
+    //操作权限
+    mode_t mode;
+    //文件路径
+    char pathName[PATH_MAX];
+
+};
+//消息对垒格式的包
+struct Msg{
+    //消息类型
+    long type;
+    //消息数据
+    struct Packet buf;
+};
 
 //得到队列标识符
 int GetKey()
@@ -89,35 +110,48 @@ int open(const char *s1,int flags,...)
 
 
     struct Buf buf;
+    struct Msg msg;
     //根据文件相对路径获取绝对路径
     realpath(s1,buf.mdata.mtext.Path); 
     buf.mdata.mtext.flag = flags;
     buf.mdata.mtext.mode = tmp;
 
+    realpath(s1,msg.buf.pathName);
+    msg.buf.flag = flags;
+    msg.buf.mode = tmp;
+
     int msgid = GetKey();
     printf("msgid = %d\n",msgid);
 
     //发送OPEN请求到消息队列
-    buf.mtype = 2;
+    buf.mtype = 1;
     buf.mdata.pid = getpid();
     buf.mdata.type = OPEN;
     
-    printf("%s %d %u\n",buf.mdata.mtext.Path,buf.mdata.mtext.flag,buf.mdata.mtext.mode);
+    msg.type = 1;
+    msg.buf.pid = getpid();
+    msg.buf.type = OPEN;
+
+    printf("旧数据:%s %d %u\n",buf.mdata.mtext.Path,buf.mdata.mtext.flag,buf.mdata.mtext.mode);
+    printf("新数据:%s %d %u\n",msg.buf.pathName,msg.buf.flag,msg.buf.mode);
 
 
-    if (msgsnd(msgid, (void *)&buf, sizeof(struct Buf) - sizeof(long), 0) < 0) {
+    if (msgsnd(msgid, (void *)&msg, sizeof(msg) - sizeof(long), 0) < 0) {
         perror("msgsnd()");
         printf("%d",errno);
         exit(1);
     }
 
+
+
     //已将open请求发送给客户端,等待客户端返回通知
     struct Buf Recv_buf;
+    struct Msg Recv_msg;
 
     while(1) {
         int i = 0;
-        if((i = msgrcv(msgid,&Recv_buf,sizeof(Recv_buf) - sizeof(long),getpid(),0)) > 0) {
-            switch(Recv_buf.mdata.type) {
+        if((i = msgrcv(msgid,&Recv_msg,sizeof(Recv_msg) - sizeof(long),getpid(),0)) > 0) {
+            switch(Recv_msg.buf.type) {
             case ALIVE:
                 printf("alive\n");
                 //服务器与客户端连接已断开，拒绝任何程序打开监控目录下的所有文件
@@ -163,24 +197,35 @@ int close(int fd)
 {
     int msgid = GetKey();
     struct Buf buf;
+    struct Msg msg;
+
     //发送CLOSE请求到客户端
     buf.mtype = getpid();
     buf.mdata.type = CLOSE;
 
+    msg.type = getpid();
+    msg.buf.type = CLOSE;
+
+    memset(buf.mdata.mtext.Path,0,100);
+    memset(msg.buf.pathName,0,100);
+
     get_file_name(fd,buf.mdata.mtext.Path);
+    get_file_name(fd,msg.buf.pathName);
 
-    printf("%s %ld\n",buf.mdata.mtext.Path,buf.mtype);
+    printf("旧数据Path=%s mtype=%ld\n",buf.mdata.mtext.Path,buf.mtype);
+    printf("新数据Path=%s mtype=%ld\n",msg.buf.pathName,msg.type);
 
-    if (msgsnd(msgid, &buf, sizeof(buf) - sizeof(long), 0) == -1) {
+    if (msgsnd(msgid, &msg, sizeof(msg) - sizeof(long), 0) == -1) {
         perror("msgsnd()");
         exit(1);
     }
 
      //已将close请求发送给客户端,等待客户端返回通知
     struct Buf Recv_buf;
+    struct Msg Recv_msg;
 
-    if(msgrcv(msgid,&Recv_buf,sizeof(Recv_buf) - sizeof(long),getpid(),0) != -1) {
-        switch(Recv_buf.mdata.type) {
+    if(msgrcv(msgid,&Recv_msg,sizeof(Recv_msg) - sizeof(long),getpid(),0) != -1) {
+        switch(Recv_msg.buf.type) {
             case ALIVE:
                 //服务器与客户端连接已断开，拒绝任何程序关闭监控目录下的所有文件
                 return -1;
