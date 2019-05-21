@@ -1,4 +1,5 @@
 #include <iostream>
+#include <stdlib.h>
 #include "Thread_Download.h"
 
 //解析url链接
@@ -29,14 +30,15 @@ void HTTP::Parse() {
     hints.ai_socktype = 0;
     int n;
     
-    if( (n = (getaddrinfo(host.c_str(),"ftp",&hints,&res))) != 0 ) {
+    if( (n = (getaddrinfo(host.c_str(),NULL,&hints,&res))) != 0 ) {
         std::cout << "getaddrinfo error" << std::endl;
     }
     for(auto p = res;p;p = p->ai_next) {
         std::cout << inet_ntoa(((struct sockaddr_in *)p->ai_addr)->sin_addr) << std::endl;
-        if(p->ai_canonname)
-            std::cout << p->ai_canonname << std::endl;
+        std::cout << ntohs(((struct sockaddr_in *)p->ai_addr)->sin_port) << std::endl;
     }
+
+    freeaddrinfo(res);
 
     std::cout << url << std::endl;
     std::cout << port << std::endl;

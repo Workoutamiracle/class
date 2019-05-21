@@ -30,8 +30,25 @@ int main()
 
     get_file_name(fd,sizeof(path),path);
     printf("%zd\n%s\n",strlen(path),path);
-    
     close(fd);
+
+    int fd_new = open("./3.jpeg.tar.gz",O_RDONLY);
+    char ch[100];
+
+    int fd_create = open("./4.jpeg",O_WRONLY | O_CREAT,0777);
+
+    int i = 0,j = 0;
+    
+    while((i += read(fd_new,ch,100)) == 100) {
+        while((j += write(fd_create,ch,100)) == 100) {
+            j = 0;
+            break;
+        }
+        i = 0;
+    }
+    close(fd_new);
+    close(fd_create);
+
     return 0;
 }
 
