@@ -1,15 +1,16 @@
 #ifndef PROJECT_DOWNLOAD_
 #define PROJECT DOWNLOAD_
 #include <iostream>
+#include <fstream>
 #include <string>
+#include <utility>
+#include <unistd.h>
 #include <netdb.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <string.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <fstream>
-#include <pthread.h>
 #include <vector>
 #include <sys/stat.h>
 #include <cstdio>
@@ -19,17 +20,17 @@
 
 using namespace std;
 //下载任务类
-class Download{
+class Download {
 public:
-    Download(string &_url) : url(_url) {  }
-    Download(string &_url,string &_path) : url(_url),Path(_path) {  }
-    Download(string &_url,string &_path,string &_name) : url(_url),Path(_path),name(_name) {  }
+    Download(const string &_url) : url(_url) {  }
+    Download(const string &_url,const string &_path) : url(_url),Path(_path) {  }
+    Download(const string &_url,const string &_path,const string &_name) : url(_url),Path(_path),name(_name) {  }
     ~Download() = default;
 private:
     //通过url解析出需下载的文件大小和类型
     void GetAttribute();
-    //多线程下入文件内容
-    void Write_Thread();
+    //多线程下载文件内容
+    void WriteThread();
     //合并每个线程单独写的文件
     void Mergefile(int num);
 
@@ -43,13 +44,21 @@ private:
 //http操作类
 class HTTP {
 public:
-    HTTP(string &_url) : url(_url) { Parse(); }
+    HTTP(const string &_url) : url(_url) { 
+        Parse(); 
+        Connect();
+    }
     //发送http请求头
     void SendHttpHead(long start,long end);
      //读取http响应头
     void ReadHttpHead();
     //解析http响应头
-    void ParseHead();
+    pair<int,string> ParseHead();
+    
+    //析构函数
+    ~HTTP() {
+        close(fd);
+    }
 private:
     //解析url链接
     void Parse();
@@ -60,5 +69,10 @@ private:
     string port = "80";   //服务器端口号
     string host;//远程主机地址
     string ip_addr;//主机ip地址
+    string buf; //接收缓冲区
+    int fd;     //套接字
+
 };
+
+
 #endif //PROJECT_DOWNLOAD

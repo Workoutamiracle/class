@@ -8,13 +8,9 @@ int main()
 {
     char ch;
     int num;
-    char *c = &ch;
-    int *p = &num;
 
-    printf("c=%p\n",c);
-    printf("c+1=%p\n",c+1);
-    printf("p=%p\n",p);
-    printf("p+1=%p\n",p+1);
+    ch = 1;
+    num = 2;
 
     printf("%zd\n",sizeof(struct A));
     return 0;
